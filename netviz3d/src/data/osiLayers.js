@@ -1,0 +1,342 @@
+/**
+ * OSI Model Layer Definitions
+ * Organized by concept names for proper structure and retrieval.
+ * 
+ * Each layer contains concepts that will be visualized in 3D.
+ * The structure supports "ping" and "three-way handshake" demonstrations.
+ */
+
+export const OSI_LAYERS = [
+  {
+    id: 'application',
+    name: 'Application Layer',
+    number: 7,
+    color: '#10b981', // Emerald green
+    description: 'User applications and network services',
+    concepts: [
+      {
+        id: 'app-http',
+        name: 'HTTP',
+        meaning: 'Protocol for transferring hypertext documents',
+        example: 'Browser requesting a webpage (port 80/443)',
+        visualGoal: 'Show HTTP request/response packets',
+      },
+      {
+        id: 'app-dns',
+        name: 'DNS',
+        meaning: 'Translates domain names to IP addresses',
+        example: 'google.com -> 142.250.185.46',
+        visualGoal: 'Illustrate DNS query and resolution',
+      },
+      {
+        id: 'app-ftp',
+        name: 'FTP',
+        meaning: 'File Transfer Protocol for uploading/downloading files',
+        example: 'Transferring files to a server (port 21)',
+        visualGoal: 'Show file transmission between nodes',
+      },
+      {
+        id: 'app-data-gen',
+        name: 'Data Generator',
+        meaning: 'Synthesized traffic for simulation purposes',
+        example: 'Generating 100 packets/second for testing',
+        visualGoal: 'Visualize continuous data flow',
+      },
+    ],
+  },
+  {
+    id: 'transport',
+    name: 'Transport Layer',
+    number: 4,
+    color: '#a855f7', // Purple
+    description: 'End-to-end communication and reliability',
+    concepts: [
+      {
+        id: 'trans-segmentation',
+        name: 'Segmentation',
+        meaning: 'Breaking large data into smaller segments',
+        example: 'Dividing a 1MB file into 1460-byte segments',
+        visualGoal: 'Show data being split into segments',
+      },
+      {
+        id: 'trans-tcp-conn',
+        name: 'TCP Connection',
+        meaning: 'Establishing a reliable connection via TCP handshake',
+        example: 'SYN → SYN-ACK → ACK (three-way handshake)',
+        visualGoal: 'Animate the three-way handshake process',
+      },
+      {
+        id: 'trans-ack',
+        name: 'ACK',
+        meaning: 'Acknowledgment that data was received successfully',
+        example: 'Receiver sends ACK=12345 to confirm receipt',
+        visualGoal: 'Show acknowledgment packets flowing back',
+      },
+      {
+        id: 'trans-retrans',
+        name: 'Retransmission',
+        meaning: 'Resending data packets if ACK is not received',
+        example: 'Timeout after 1 second, resend segment',
+        visualGoal: 'Visualize timeout and retry mechanism',
+      },
+      {
+        id: 'trans-flow-ctrl',
+        name: 'Flow Control',
+        meaning: 'Managing data transmission rate to prevent congestion',
+        example: 'Sender limits window size to 64KB per ACK',
+        visualGoal: 'Show sliding window mechanism',
+      },
+      {
+        id: 'trans-tcp-vs-udp',
+        name: 'TCP vs UDP',
+        meaning: 'Comparing reliable (TCP) vs unreliable (UDP) protocols',
+        example: 'TCP for email, UDP for video streaming',
+        visualGoal: 'Side-by-side comparison visualization',
+      },
+    ],
+  },
+  {
+    id: 'network',
+    name: 'Network Layer',
+    number: 3,
+    color: '#3b82f6', // Blue
+    description: 'Routing and logical addressing',
+    concepts: [
+      {
+        id: 'net-ip-addr',
+        name: 'IP Addressing',
+        meaning: 'Unique identity assigned to each device on a network',
+        example: 'Laptop with IP 192.168.1.10',
+        visualGoal: 'Display IP labels on network nodes',
+      },
+      {
+        id: 'net-subnetting',
+        name: 'Subnetting',
+        meaning: 'Dividing an IP network into smaller subnetworks',
+        example: '192.168.1.0/24 (subnet mask 255.255.255.0)',
+        visualGoal: 'Show network segmentation and boundaries',
+      },
+      {
+        id: 'net-routing-table',
+        name: 'Routing Table',
+        meaning: 'A table containing routes packets should take',
+        example: 'Route to 10.0.0.0/8 via 192.168.1.1',
+        visualGoal: 'Display routing decisions at each router',
+      },
+      {
+        id: 'net-forwarding',
+        name: 'Forwarding',
+        meaning: 'Process of passing a packet to the next hop',
+        example: 'Router forwards packet based on routing table',
+        visualGoal: 'Animate packet movement between routers',
+      },
+      {
+        id: 'net-path-selection',
+        name: 'Path Selection',
+        meaning: 'Choosing the best route from source to destination',
+        example: 'OSPF calculates shortest path: A→R1→B',
+        visualGoal: 'Highlight the optimal path with glow effect',
+      },
+      {
+        id: 'net-ttl',
+        name: 'TTL',
+        meaning: 'Time-To-Live; prevents packets from circulating forever',
+        example: 'TTL=64, decrements by 1 at each hop',
+        visualGoal: 'Show TTL counter and packet age',
+      },
+      {
+        id: 'net-pkt-drop',
+        name: 'Packet Drop',
+        meaning: 'Discarding packets due to congestion or error',
+        example: 'Queue full, drop packet instead of buffering',
+        visualGoal: 'Visualize dropped packets fading away',
+      },
+    ],
+  },
+  {
+    id: 'datalink',
+    name: 'Data-Link Layer',
+    number: 2,
+    color: '#f59e0b', // Amber
+    description: 'Physical addressing and frame management',
+    concepts: [
+      {
+        id: 'dl-mac-addr',
+        name: 'MAC Address',
+        meaning: 'Physical hardware address for LAN communication',
+        example: 'Device with MAC 00:1A:2B:3C:4D:5E',
+        visualGoal: 'Display MAC addresses in local segments',
+      },
+      {
+        id: 'dl-framing',
+        name: 'Framing',
+        meaning: 'Organizing data into frames with headers and trailers',
+        example: 'Ethernet frame with source, destination, CRC',
+        visualGoal: 'Show frame structure with boundaries',
+      },
+      {
+        id: 'dl-arp',
+        name: 'ARP',
+        meaning: 'Address Resolution Protocol; maps IP to MAC addresses',
+        example: 'Who has 192.168.1.1? → 00:1A:2B:3C:4D:5E',
+        visualGoal: 'Animate ARP broadcast and unicast response',
+      },
+      {
+        id: 'dl-error-check',
+        name: 'Error Checking',
+        meaning: 'Detecting transmission errors using checksums/CRC',
+        example: 'CRC-32 detects bit flips and corruption',
+        visualGoal: 'Show error detection and frame discard',
+      },
+    ],
+  },
+  {
+    id: 'session',
+    name: 'Session Layer',
+    number: 5,
+    color: '#f43f5e',
+    description: 'Session management and dialogue control',
+    concepts: [
+      {
+        id: 'sess-establishment',
+        name: 'Session Establishment',
+        meaning: 'Initiating and preparing a communication session',
+        example: 'Client connects to server, session ID created',
+        visualGoal: 'Visualize session initialization handshake',
+      },
+      {
+        id: 'sess-dialog-control',
+        name: 'Dialog Control',
+        meaning: 'Managing turn-taking in bidirectional communication',
+        example: 'Token passing to ensure one speaker at a time',
+        visualGoal: 'Show two-way communication with control flow',
+      },
+      {
+        id: 'sess-sync',
+        name: 'Synchronization',
+        meaning: 'Establishing checkpoints for data recovery',
+        example: 'Major sync point every 1000 bytes sent',
+        visualGoal: 'Display session checkpoints along timeline',
+      },
+      {
+        id: 'sess-termination',
+        name: 'Termination',
+        meaning: 'Properly closing and cleaning up a session',
+        example: 'Graceful close with final ACK exchange',
+        visualGoal: 'Animate session closure and resource cleanup',
+      },
+    ],
+  },
+  {
+    id: 'presentation',
+    name: 'Presentation Layer',
+    number: 6,
+    color: '#ec4899',
+    description: 'Data formatting and encryption',
+    concepts: [
+      {
+        id: 'pres-encryption',
+        name: 'Encryption',
+        meaning: 'Encrypting data for security and privacy',
+        example: 'AES-256 encryption of sensitive data',
+        visualGoal: 'Show plaintext transforming to ciphertext',
+      },
+      {
+        id: 'pres-compression',
+        name: 'Compression',
+        meaning: 'Reducing data size for efficient transmission',
+        example: 'GZIP compression reducing file size by 70%',
+        visualGoal: 'Visualize data shrinking during compression',
+      },
+      {
+        id: 'pres-encoding',
+        name: 'Encoding',
+        meaning: 'Converting data to standard format (e.g., UTF-8)',
+        example: 'Character encoding conversion for different systems',
+        visualGoal: 'Show format conversion process',
+      },
+      {
+        id: 'pres-translation',
+        name: 'Translation',
+        meaning: 'Converting between different data formats',
+        example: 'Converting JPEG to PNG, or JSON to XML',
+        visualGoal: 'Demonstrate format transformation',
+      },
+    ],
+  },
+  {
+    id: 'physical',
+    name: 'Physical Layer',
+    number: 1,
+    color: '#eab308',
+    description: 'Physical transmission medium and signals',
+    concepts: [
+      {
+        id: 'phys-cables',
+        name: 'Cables & Media',
+        meaning: 'Physical medium carrying signals (copper, fiber, wireless)',
+        example: 'Cat6 UTP cable for Ethernet, fiber optic for long distances',
+        visualGoal: 'Display different cable types and connections',
+      },
+      {
+        id: 'phys-digital-signals',
+        name: 'Digital Signals',
+        meaning: 'Representing binary data as voltage levels (high/low)',
+        example: 'Voltage: 5V=1 (high), 0V=0 (low)',
+        visualGoal: 'Visualize digital signal waveform (0s and 1s)',
+      },
+      {
+        id: 'phys-modulation',
+        name: 'Signal Modulation',
+        meaning: 'Modulating signals onto carrier waves for transmission',
+        example: 'WiFi using OFDM modulation at 2.4 GHz',
+        visualGoal: 'Show signal modulation onto carrier wave',
+      },
+      {
+        id: 'phys-hubs',
+        name: 'Hubs & Repeaters',
+        meaning: 'Devices that extend signal range and connect segments',
+        example: 'Network hub broadcasting to all connected ports',
+        visualGoal: 'Display hub repeating signal to all ports',
+      },
+      {
+        id: 'phys-line-coding',
+        name: 'Line Coding',
+        meaning: 'Encoding digital data into physical signal patterns',
+        example: 'Manchester encoding, 8B/10B encoding',
+        visualGoal: 'Show binary data encoded as signal patterns',
+      },
+      {
+        id: 'phys-sync',
+        name: 'Synchronization',
+        meaning: 'Maintaining timing synchronization between sender and receiver',
+        example: 'Clock recovery from bit stream',
+        visualGoal: 'Visualize clock signals and synchronization pulses',
+      },
+    ],
+  },
+]
+
+/**
+ * Utility: Get layer by ID
+ */
+export const getLayerById = (id) => OSI_LAYERS.find((l) => l.id === id)
+
+/**
+ * Utility: Get concept by ID
+ */
+export const getConceptById = (conceptId) => {
+  for (const layer of OSI_LAYERS) {
+    const concept = layer.concepts.find((c) => c.id === conceptId)
+    if (concept) return { ...concept, layerId: layer.id, layerName: layer.name }
+  }
+  return null
+}
+
+/**
+ * Utility: Get all concepts for a layer
+ */
+export const getLayerConcepts = (layerId) => {
+  const layer = getLayerById(layerId)
+  return layer?.concepts ?? []
+}
