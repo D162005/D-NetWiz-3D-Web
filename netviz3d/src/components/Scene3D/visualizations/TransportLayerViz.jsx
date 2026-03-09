@@ -1,104 +1,23 @@
 import React from 'react'
 import { useFrame } from '@react-three/fiber'
 import { useRef } from 'react'
+import { Text } from '@react-three/drei'
 import TCPConnectionViz from './TCPConnectionViz'
+import SegmentationStage from './SegmentationStage'
+import ACKViz from './ACKViz'
+import FlowControlViz from './FlowControlViz'
+import TcpUdpViz from './TcpUdpViz'
 
 /**
  * Transport Layer Visualization - Per-Concept Models
  * Segmentation | TCP Connection | ACK | Retransmission | Flow Control | TCP vs UDP
  */
 
-// Segmentation Visualization
-function SegmentationViz() {
-  const groupRef = useRef()
-  const timeRef = useRef(0)
-  useFrame(() => {
-    timeRef.current += 0.016
-    if (groupRef.current) groupRef.current.rotation.y += 0.005
-  })
-  return (
-    <group ref={groupRef}>
-      {/* Large data cube */}
-      <mesh position={[-3, 0, 0]}>
-        <boxGeometry args={[2, 2, 2]} />
-        <meshStandardMaterial color="#a855f7" emissive="#7e22ce" emissiveIntensity={0.6} />
-      </mesh>
-      {/* Split segments - positions animated in useFrame */}
-      <SegmentParticles timeRef={timeRef} />
-      {/* Arrow elements */}
-      <mesh position={[-1, -1, 0]}>
-        <sphereGeometry args={[0.3, 16, 16]} />
-        <meshStandardMaterial color="#fbbf24" emissive="#f59e0b" emissiveIntensity={0.8} />
-      </mesh>
-    </group>
-  )
-}
-
-function SegmentParticles({ timeRef }) {
-  const particlesRef = useRef([])
-
-  useFrame(() => {
-    particlesRef.current.forEach((ref, i) => {
-      if (ref) {
-        ref.position.y = -2.5 + Math.sin(timeRef.current * 0.002 + i) * 0.5
-      }
-    })
-  })
-
-  return (
-    <>
-      {[0, 1, 2, 3].map((i) => (
-        <mesh key={`seg-${i}`} ref={(el) => (particlesRef.current[i] = el)} position={[0 + i * 1.2, -2.5, 0]}>
-          <boxGeometry args={[0.8, 0.8, 0.8]} />
-          <meshStandardMaterial color="#d8b4fe" emissive="#a855f7" emissiveIntensity={0.8} />
-        </mesh>
-      ))}
-    </>
-  )
-}
-
 // TCP Connection Visualization is now imported from TCPConnectionViz.jsx
 // See TCPConnectionViz component for Phase 1-5 implementation details
 
-// ACK Visualization
-function ACKViz() {
-  const groupRef = useRef()
-  const particlesRef = useRef([])
-  const timeRef = useRef(0)
-
-  useFrame(() => {
-    timeRef.current += 0.016
-    if (groupRef.current) groupRef.current.rotation.y += 0.008
-    particlesRef.current.forEach((ref, i) => {
-      if (ref) {
-        ref.position.x = -2 + i * 2 + Math.sin(timeRef.current * 0.005 + i) * 0.5
-        ref.position.y = 0.5 + Math.cos(timeRef.current * 0.003 + i) * 0.3
-      }
-    })
-  })
-
-  return (
-    <group ref={groupRef}>
-      {/* Sender node */}
-      <mesh position={[-4, 0, 0]}>
-        <sphereGeometry args={[0.8, 32, 32]} />
-        <meshStandardMaterial color="#a855f7" emissive="#7e22ce" emissiveIntensity={0.7} />
-      </mesh>
-      {/* ACK packets flying */}
-      {[0, 1, 2].map((i) => (
-        <mesh key={`ack-${i}`} ref={(el) => (particlesRef.current[i] = el)} position={[0, 0, 0]}>
-          <boxGeometry args={[0.5, 0.5, 0.5]} />
-          <meshStandardMaterial color="#d8b4fe" emissive="#a855f7" emissiveIntensity={0.9} />
-        </mesh>
-      ))}
-      {/* Receiver node */}
-      <mesh position={[4, 0, 0]}>
-        <sphereGeometry args={[0.8, 32, 32]} />
-        <meshStandardMaterial color="#a855f7" emissive="#7e22ce" emissiveIntensity={0.7} />
-      </mesh>
-    </group>
-  )
-}
+// ACK Mechanism Visualization is now imported from ACKViz.jsx
+// See ACKViz component for STOP-AND-WAIT protocol implementation
 
 // Retransmission Visualization
 function RetransmissionViz() {
@@ -142,115 +61,25 @@ function RetransmissionViz() {
   )
 }
 
-// Flow Control Visualization
-function FlowControlViz() {
-  const groupRef = useRef()
-  const particlesRef = useRef([])
-  const timeRef = useRef(0)
-  useFrame(() => {
-    timeRef.current += 0.016
-    if (groupRef.current) groupRef.current.rotation.z += 0.004
-    particlesRef.current.forEach((ref, i) => {
-      if (ref) {
-        ref.position.y = 0.5 + Math.sin(timeRef.current * 0.003 + i) * 0.4
-      }
-    })
-  })
-  return (
-    <group ref={groupRef}>
-      {/* Sender window */}
-      <mesh position={[-4, 0, 0]}>
-        <boxGeometry args={[1.5, 3, 1]} />
-        <meshStandardMaterial color="#a855f7" emissive="#7e22ce" emissiveIntensity={0.6} />
-      </mesh>
-      {/* Sliding window */}
-      <mesh position={[0, 0, 0]}>
-        <boxGeometry args={[3, 2.5, 0.8]} />
-        <meshStandardMaterial color="#d8b4fe" transparent opacity={0.5} emissive="#a855f7" emissiveIntensity={0.5} />
-      </mesh>
-      {/* Data packets in transit */}
-      {[0, 1].map((i) => (
-        <mesh key={`window-${i}`} ref={(el) => (particlesRef.current[i] = el)} position={[-1 + i * 2, 0, 0]}>
-          <sphereGeometry args={[0.4, 16, 16]} />
-          <meshStandardMaterial color="#fbbf24" emissive="#f59e0b" emissiveIntensity={0.8} />
-        </mesh>
-      ))}
-      {/* Receiver */}
-      <mesh position={[4, 0, 0]}>
-        <boxGeometry args={[1.5, 3, 1]} />
-        <meshStandardMaterial color="#a855f7" emissive="#7e22ce" emissiveIntensity={0.6} />
-      </mesh>
-    </group>
-  )
-}
+// Flow Control Visualization is now imported from FlowControlViz.jsx
 
-// TCP vs UDP Visualization
-function TCPvsUDPViz() {
-  const groupRef = useRef()
-  const udpParticlesRef = useRef([])
-  const timeRef = useRef(0)
-  useFrame(() => {
-    timeRef.current += 0.016
-    if (groupRef.current) groupRef.current.rotation.y += 0.003
-    udpParticlesRef.current.forEach((ref, i) => {
-      if (ref) {
-        ref.position.x = 3.5 + Math.sin(timeRef.current * 0.005 + i) * 1.5
-      }
-    })
-  })
-  return (
-    <group ref={groupRef}>
-      {/* TCP side - Reliable (complex) */}
-      <group position={[-3.5, 0, 0]}>
-        <mesh position={[0, 2, 0]}>
-          <octahedronGeometry args={[1, 0]} />
-          <meshStandardMaterial color="#a855f7" emissive="#7e22ce" emissiveIntensity={0.7} />
-        </mesh>
-        {[0, 1, 2].map((i) => (
-          <mesh key={`tcp-${i}`} position={[0, 0.5 - i * 1, 0]}>
-            <boxGeometry args={[0.6, 0.4, 0.6]} />
-            <meshStandardMaterial color="#d8b4fe" emissive="#a855f7" emissiveIntensity={0.8} />
-          </mesh>
-        ))}
-        {/* TCP label ring */}
-        <mesh>
-          <torusGeometry args={[1.5, 0.1, 8, 100]} />
-          <meshStandardMaterial color="#a855f7" emissive="#7e22ce" emissiveIntensity={0.5} />
-        </mesh>
-      </group>
-      {/* UDP side - Fast (simple) */}
-      <group position={[3.5, 0, 0]}>
-        <mesh position={[0, 1.5, 0]}>
-          <sphereGeometry args={[0.8, 32, 32]} />
-          <meshStandardMaterial color="#f59e0b" emissive="#ea580c" emissiveIntensity={0.7} />
-        </mesh>
-        {/* Quick particles */}
-        {[0, 1].map((i) => (
-          <mesh key={`udp-${i}`} ref={(el) => (udpParticlesRef.current[i] = el)} position={[0, -0.5, 0]}>
-            <sphereGeometry args={[0.3, 16, 16]} />
-            <meshStandardMaterial color="#fbbf24" emissive="#f59e0b" emissiveIntensity={0.9} />
-          </mesh>
-        ))}
-      </group>
-    </group>
-  )
-}
+// TCP vs UDP Visualization is now imported from TcpUdpViz.jsx
 
-export default function TransportLayerViz({ conceptId = 'trans-segmentation', triggerScenario, triggerClosing, onStateUpdate }) {
+export default function TransportLayerViz({ conceptId = 'trans-segmentation', triggerScenario, triggerClosing, onStateUpdate, segmentPhase, inOrderMode, ackIsRunning, onACKMessage, ackResetTrigger, packetLossEnabled, ackLossEnabled, flowControlIsRunning, onFlowControlMessage, flowControlResetTrigger, flowControlDrainSpeed, flowControlSimulateFullBuffer, flowControlClearBuffer, tcpUdpIsRunning, tcpUdpIsTCP, onTcpUdpMessage, tcpUdpResetTrigger, tcpUdpSimulateLoss }) {
   switch (conceptId) {
     case 'trans-segmentation':
-      return <SegmentationViz />
+      return <SegmentationStage externalPhase={segmentPhase} inOrderMode={inOrderMode} />
     case 'trans-tcp-conn':
       return <TCPConnectionViz triggerScenario={triggerScenario} triggerClosing={triggerClosing} onStateUpdate={onStateUpdate} />
     case 'trans-ack':
-      return <ACKViz />
+      return <ACKViz isRunning={ackIsRunning} onMessage={onACKMessage} resetTrigger={ackResetTrigger} packetLossEnabled={packetLossEnabled} ackLossEnabled={ackLossEnabled} />
     case 'trans-retrans':
       return <RetransmissionViz />
     case 'trans-flow-ctrl':
-      return <FlowControlViz />
+      return <FlowControlViz isRunning={flowControlIsRunning} onMessage={onFlowControlMessage} resetTrigger={flowControlResetTrigger} drainSpeed={flowControlDrainSpeed} simulateFullBuffer={flowControlSimulateFullBuffer} clearBuffer={flowControlClearBuffer} />
     case 'trans-tcp-vs-udp':
-      return <TCPvsUDPViz />
+      return <TcpUdpViz isRunning={tcpUdpIsRunning} isTCP={tcpUdpIsTCP} onMessage={onTcpUdpMessage} resetTrigger={tcpUdpResetTrigger} simulateLoss={tcpUdpSimulateLoss} />
     default:
-      return <SegmentationViz />
+      return <SegmentationStage inOrderMode={inOrderMode} />
   }
 }

@@ -1,5 +1,15 @@
+# Ignore tmpclaude-cwd files and folders
+tmpclaude-*-cwd/
+tmpclaude-*-cwd
 # Logs
-logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Ignore all Markdown and log files
+*.md
 *.log
 npm-debug.log*
 yarn-debug.log*

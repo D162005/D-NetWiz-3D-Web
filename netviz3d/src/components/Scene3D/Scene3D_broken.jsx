@@ -24,25 +24,10 @@ export default function Scene3D({ selectedConceptId, selectedLayerId, onBack }) 
   const [ackUiMessage, setAckUiMessage] = useState('') // ACK visualization: feedback message
   const [ackResetTrigger, setAckResetTrigger] = useState(0) // ACK visualization: reset trigger
   const [packetLossEnabled, setPacketLossEnabled] = useState(false) // Phase 4: Simulate packet loss
-  const [ackLossEnabled, setAckLossEnabled] = useState(false) // Phase 6: Simulate ACK loss
-  const [isSegmentationPanelMinimized, setIsSegmentationPanelMinimized] = useState(false) // TCP Segmentation panel minimize state
-  const [segmentationUiMessage, setSegmentationUiMessage] = useState('') // Segmentation visualization: feedback message
-  const [flowControlIsRunning, setFlowControlIsRunning] = useState(false)
-  const [flowControlUiMessage, setFlowControlUiMessage] = useState('')
-  const [flowControlResetTrigger, setFlowControlResetTrigger] = useState(0)
-  const [flowControlDrainSpeed, setFlowControlDrainSpeed] = useState(0.5)
-  const [flowControlSimulateFullBuffer, setFlowControlSimulateFullBuffer] = useState(false)
-  const [flowControlClearBuffer, setFlowControlClearBuffer] = useState(0)
-  const [tcpUdpIsRunning, setTcpUdpIsRunning] = useState(false)
-  const [tcpUdpIsTCP, setTcpUdpIsTCP] = useState(true)
-  const [tcpUdpUiMessage, setTcpUdpUiMessage] = useState('')
-  const [tcpUdpResetTrigger, setTcpUdpResetTrigger] = useState(0)
-  const [tcpUdpSimulateLoss, setTcpUdpSimulateLoss] = useState(false)
+  const [isSegmentationPanelMinimized, setIsSegmentationPanelMinimized] = useState(false) // Segmentation panel minimize state
   const isTCPConcept = selectedConceptId === 'trans-tcp-conn'
   const isSegmentationConcept = selectedConceptId === 'trans-segmentation'
   const isACKConcept = selectedConceptId === 'trans-ack'
-  const isFlowControlConcept = selectedConceptId === 'trans-flow-ctrl'
-  const isTcpVsUdpConcept = selectedConceptId === 'trans-tcp-vs-udp'
   const orbitControlsRef = useRef(null)
 
   const handleTriggerScenario = (scenario) => {
@@ -67,67 +52,18 @@ export default function Scene3D({ selectedConceptId, selectedLayerId, onBack }) 
       // RESTART button - always allowed
       setSegmentPhase(1)
       setProcessStep(0)
-      setSegmentationUiMessage('✅ Visualization reset to default state')
-      setTimeout(() => setSegmentationUiMessage(''), 2000)
     } else if (phase === 2 && processStep === 0) {
       // START PROCESS - only clickable when processStep === 0
       setSegmentPhase(2)
       setProcessStep(1)
-      setSegmentationUiMessage('[DATA BLOCK] 5840 bytes ready for segmentation')
-      setTimeout(() => {
-        setSegmentationUiMessage('[CUTTING] Laser segmenting data into 4 pieces...')
-        setTimeout(() => {
-          setSegmentationUiMessage('[DONE] 4 segments created: SEG 1 (1461B) | SEG 2 (1461B) | SEG 3 (1461B) | SEG 4 (1397B)')
-        }, 2500)
-      }, 500)
     } else if (phase === 3 && processStep === 1) {
       // ATTACH HEADERS - only clickable when processStep === 1
       setSegmentPhase(3)
       setProcessStep(2)
-      setSegmentationUiMessage('[PROTOCOL] Attaching TCP headers to each segment...')
-      setTimeout(() => {
-        setSegmentationUiMessage('[HEADERS] Each segment now includes: SEQ, ACK, FLAGS, CHECKSUM')
-      }, 800)
     } else if (phase === 4 && processStep === 2) {
       // SEND SEGMENTS - only clickable when processStep === 2
       setSegmentPhase(4)
       setProcessStep(3)
-      
-      if (inOrderMode) {
-        setSegmentationUiMessage('[TRANSPORT] Starting transmission (IN-ORDER mode)...')
-        setTimeout(() => {
-          setSegmentationUiMessage('[TRANSMISSION] All segments traveling to server in parallel...')
-          setTimeout(() => {
-            setSegmentationUiMessage('[ARRIVING] Segments reassembling at destination...')
-            setTimeout(() => {
-              setSegmentationUiMessage('✅ [COMPLETE] Data reassembled: 5840 bytes received')
-            }, 4000)
-          }, 2400)
-        }, 500)
-      } else {
-        setSegmentationUiMessage('[TRANSPORT] Starting transmission (OUT-OF-ORDER mode)...')
-        setTimeout(() => {
-          setSegmentationUiMessage('[SEGMENT 1] SEG 1 traveling (0-3.0s)...')
-          setTimeout(() => {
-            setSegmentationUiMessage('⚠️ [OUT-OF-ORDER] SEG 3 arrived before SEG 2!')
-            setTimeout(() => {
-              setSegmentationUiMessage('[BUFFER] Waiting for missing SEG 2...')
-              setTimeout(() => {
-                setSegmentationUiMessage('✅ [SEG 2 ARRIVED] Buffer error resolved')
-                setTimeout(() => {
-                  setSegmentationUiMessage('[VERIFY] Scanning segments [1,3,2,4] → [1,2,3,4]...')
-                  setTimeout(() => {
-                    setSegmentationUiMessage('[REORDER] Data reordered correctly in buffer')
-                    setTimeout(() => {
-                      setSegmentationUiMessage('✅ [COMPLETE] Data reassembled: 5840 bytes received')
-                    }, 4000)
-                  }, 10000)
-                }, 1500)
-              }, 3000)
-            }, 2500)
-          }, 3000)
-        }, 500)
-      }
     }
   }
 
@@ -139,55 +75,13 @@ export default function Scene3D({ selectedConceptId, selectedLayerId, onBack }) 
   }
 
   const handleACKReset = () => {
-    // Stop animation
     setAckIsRunning(false)
-    // Clear UI message
     setAckUiMessage('')
-    // Reset all visualization state in ACKViz
     setAckResetTrigger(prev => prev + 1)
-    // Show reset confirmation feedback
-    setTimeout(() => {
-      setAckUiMessage('✅ Visualization reset to default state')
-      setTimeout(() => {
-        setAckUiMessage('')
-      }, 2000)
-    }, 100)
   }
 
   const setACKUiMessage = (message) => {
     setAckUiMessage(message)
-  }
-
-  const handleFlowControlStart = () => {
-    if (!flowControlIsRunning) {
-      setFlowControlIsRunning(true)
-    }
-  }
-
-  const handleFlowControlReset = () => {
-    setFlowControlIsRunning(false)
-    setFlowControlUiMessage('')
-    setFlowControlDrainSpeed(0.5)
-    setFlowControlSimulateFullBuffer(false)
-    setFlowControlClearBuffer(0)
-    setFlowControlResetTrigger(prev => prev + 1)
-    setTimeout(() => {
-      setFlowControlUiMessage('\u2705 Visualization reset to default state')
-      setTimeout(() => setFlowControlUiMessage(''), 2000)
-    }, 100)
-  }
-
-  const handleTcpUdpStart = () => {
-    if (!tcpUdpIsRunning) {
-      setTcpUdpIsRunning(true)
-    }
-  }
-
-  const handleTcpUdpReset = () => {
-    setTcpUdpIsRunning(false)
-    setTcpUdpUiMessage('')
-    setTcpUdpSimulateLoss(false)
-    setTcpUdpResetTrigger(prev => prev + 1)
   }
 
   // Reset triggerClosing and triggerScenario after animation completes (8 seconds)
@@ -261,18 +155,6 @@ export default function Scene3D({ selectedConceptId, selectedLayerId, onBack }) 
                   onACKMessage={isACKConcept ? setACKUiMessage : undefined}
                   ackResetTrigger={isACKConcept ? ackResetTrigger : undefined}
                   packetLossEnabled={isACKConcept ? packetLossEnabled : undefined}
-                  ackLossEnabled={isACKConcept ? ackLossEnabled : undefined}
-                  flowControlIsRunning={isFlowControlConcept ? flowControlIsRunning : undefined}
-                  onFlowControlMessage={isFlowControlConcept ? setFlowControlUiMessage : undefined}
-                  flowControlResetTrigger={isFlowControlConcept ? flowControlResetTrigger : undefined}
-                  flowControlDrainSpeed={isFlowControlConcept ? flowControlDrainSpeed : undefined}
-                  flowControlSimulateFullBuffer={isFlowControlConcept ? flowControlSimulateFullBuffer : undefined}
-                  flowControlClearBuffer={isFlowControlConcept ? flowControlClearBuffer : undefined}
-                  tcpUdpIsRunning={isTcpVsUdpConcept ? tcpUdpIsRunning : undefined}
-                  tcpUdpIsTCP={isTcpVsUdpConcept ? tcpUdpIsTCP : undefined}
-                  onTcpUdpMessage={isTcpVsUdpConcept ? setTcpUdpUiMessage : undefined}
-                  tcpUdpResetTrigger={isTcpVsUdpConcept ? tcpUdpResetTrigger : undefined}
-                  tcpUdpSimulateLoss={isTcpVsUdpConcept ? tcpUdpSimulateLoss : undefined}
                 />
               </Suspense>
             </Canvas>
@@ -411,25 +293,12 @@ export default function Scene3D({ selectedConceptId, selectedLayerId, onBack }) 
         {/* Control Panel - For Segmentation Concept */}
         {isSegmentationConcept && (
           <motion.div
-            className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-slate-950 via-slate-950/90 to-transparent p-10 z-10 pointer-events-none"
+            className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-slate-950 via-slate-950/90 to-transparent p-8 z-10 pointer-events-none"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.4, duration: 0.5 }}
           >
             <div className="max-w-5xl mx-auto">
-              {/* Message Display Area - Enhanced Spacing */}
-              {segmentationUiMessage && (
-                <motion.div 
-                  className="mb-10 p-5 rounded-lg bg-gradient-to-r from-cyan-500/20 to-blue-500/20 border border-cyan-400/50 backdrop-blur-sm"
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -10 }}
-                >
-                  <p className="text-cyan-300 font-semibold text-center text-lg">
-                    {segmentationUiMessage}
-                  </p>
-                </motion.div>
-              )}
               {/* Control Buttons */}
               <div className="flex flex-nowrap gap-3 justify-center items-center pointer-events-auto overflow-x-auto px-4 md:px-8">
                 {/* START PROCESS Button */}
@@ -542,7 +411,7 @@ export default function Scene3D({ selectedConceptId, selectedLayerId, onBack }) 
 
               {/* Control Buttons - Organized Layout */}
               <div className="flex flex-col w-full gap-0 pointer-events-auto">
-                {/* Main Control Button Row - Start, Packet Loss, ACK Loss, Reset */}
+                {/* Main Control Button Row - Start, Reset, Packet Loss */}
                 <div className="flex flex-wrap gap-4 justify-center items-center px-4">
                   {/* START Button */}
                   <motion.button
@@ -561,56 +430,33 @@ export default function Scene3D({ selectedConceptId, selectedLayerId, onBack }) 
                     START
                   </motion.button>
 
-                  {/* Simulate Packet Loss Toggle - Phase 4 */}
-                  <motion.button
-                    onClick={() => setPacketLossEnabled(!packetLossEnabled)}
-                    disabled={ackIsRunning}
-                    className={`px-10 py-4 rounded-lg font-bold text-base whitespace-nowrap
-                               transition-all duration-300 flex items-center gap-3 flex-shrink-0 ${
-                      ackIsRunning
-                        ? 'bg-gradient-to-r from-slate-600/40 to-slate-700/30 border border-slate-400/50 text-slate-300 cursor-not-allowed opacity-60'
-                        : packetLossEnabled
-                        ? 'bg-gradient-to-r from-orange-500/40 to-red-500/30 border border-orange-400/80 text-orange-200 hover:from-orange-500/50 hover:to-red-500/40 shadow-lg shadow-orange-500/20'
-                        : 'bg-gradient-to-r from-slate-600/40 to-slate-700/30 border border-slate-400/50 text-slate-300 hover:from-slate-600/50 hover:to-slate-700/40 shadow-lg shadow-slate-600/20'
-                    }`}
-                    whileHover={ackIsRunning ? {} : { scale: 1.05 }}
-                    whileTap={ackIsRunning ? {} : { scale: 0.95 }}
-                  >
-                    <span className="text-xl">{packetLossEnabled ? '⚠️' : '📦'}</span>
-                    {packetLossEnabled ? 'PACKET LOSS ON' : 'PACKET LOSS OFF'}
-                  </motion.button>
-
-                  {/* Simulate ACK Loss Toggle - Phase 6 */}
-                  <motion.button
-                    onClick={() => setAckLossEnabled(!ackLossEnabled)}
-                    disabled={ackIsRunning}
-                    className={`px-10 py-4 rounded-lg font-bold text-base whitespace-nowrap
-                               transition-all duration-300 flex items-center gap-3 flex-shrink-0 ${
-                      ackIsRunning
-                        ? 'bg-gradient-to-r from-slate-600/40 to-slate-700/30 border border-slate-400/50 text-slate-300 cursor-not-allowed opacity-60'
-                        : ackLossEnabled
-                        ? 'bg-gradient-to-r from-purple-500/40 to-pink-500/30 border border-purple-400/80 text-purple-200 hover:from-purple-500/50 hover:to-pink-500/40 shadow-lg shadow-purple-500/20'
-                        : 'bg-gradient-to-r from-slate-600/40 to-slate-700/30 border border-slate-400/50 text-slate-300 hover:from-slate-600/50 hover:to-slate-700/40 shadow-lg shadow-slate-600/20'
-                    }`}
-                    whileHover={ackIsRunning ? {} : { scale: 1.05 }}
-                    whileTap={ackIsRunning ? {} : { scale: 0.95 }}
-                  >
-                    <span className="text-xl">{ackLossEnabled ? '❌' : '↩️'}</span>
-                    {ackLossEnabled ? 'ACK LOSS ON' : 'ACK LOSS OFF'}
-                  </motion.button>
-
                   {/* RESET Button */}
                   <motion.button
                     onClick={handleACKReset}
-                    className="px-12 py-4 rounded-lg bg-gradient-to-r from-red-500/50 to-red-600/40 
-                               border-2 border-red-400/80 text-red-100 font-bold text-base whitespace-nowrap
-                               hover:from-red-500/70 hover:to-red-600/60 hover:border-red-300
-                               transition-all duration-300 flex items-center gap-3 flex-shrink-0 
-                               shadow-lg shadow-red-500/30 hover:shadow-red-500/50"
-                    whileHover={{ scale: 1.08, boxShadow: '0 0 20px rgba(239, 68, 68, 0.6)' }}
-                    whileTap={{ scale: 0.92 }}
+                    className="px-10 py-4 rounded-lg bg-gradient-to-r from-cyan-500/40 to-blue-500/30 
+                               border border-cyan-400/80 text-cyan-200 font-bold text-base whitespace-nowrap
+                               hover:from-cyan-500/50 hover:to-blue-500/40 
+                               transition-all duration-300 flex items-center gap-3 flex-shrink-0 shadow-lg shadow-cyan-500/20"
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
                   >
-                    <span className="text-2xl">↺</span> RESET
+                    <span className="text-xl">↺</span> RESET
+                  </motion.button>
+
+                  {/* Simulate Packet Loss Toggle - Phase 4 */}
+                  <motion.button
+                    onClick={() => setPacketLossEnabled(!packetLossEnabled)}
+                    className={`px-10 py-4 rounded-lg font-bold text-base whitespace-nowrap
+                               transition-all duration-300 flex items-center gap-3 flex-shrink-0 ${
+                      packetLossEnabled
+                        ? 'bg-gradient-to-r from-orange-500/40 to-red-500/30 border border-orange-400/80 text-orange-200 hover:from-orange-500/50 hover:to-red-500/40 shadow-lg shadow-orange-500/20'
+                        : 'bg-gradient-to-r from-slate-600/40 to-slate-700/30 border border-slate-400/50 text-slate-300 hover:from-slate-600/50 hover:to-slate-700/40 shadow-lg shadow-slate-600/20'
+                    }`}
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                  >
+                    <span className="text-xl">{packetLossEnabled ? '⚠️' : '📦'}</span>
+                    {packetLossEnabled ? 'PACKET LOSS ON' : 'PACKET LOSS OFF'}
                   </motion.button>
                 </div>
 
@@ -623,209 +469,8 @@ export default function Scene3D({ selectedConceptId, selectedLayerId, onBack }) 
           </motion.div>
         )}
 
-        {/* Control Panel - For Flow Control Concept */}
-        {isFlowControlConcept && (
-          <motion.div
-            className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-slate-950 via-slate-950/95 to-transparent p-10 z-10 pointer-events-none"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.4, duration: 0.5 }}
-          >
-            <div className="max-w-6xl mx-auto">
-              {flowControlUiMessage && (
-                <motion.div 
-                  className="mb-14 p-5 rounded-lg bg-gradient-to-r from-blue-500/20 to-purple-500/20 border border-blue-400/50 backdrop-blur-sm"
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -10 }}
-                >
-                  <p className="text-blue-300 font-semibold text-center text-xl">
-                    {flowControlUiMessage}
-                  </p>
-                </motion.div>
-              )}
-              <div className="flex flex-col w-full gap-0 pointer-events-auto">
-                <div className="flex flex-wrap gap-4 justify-center items-center px-4">
-                  {/* START Button */}
-                  <motion.button
-                    onClick={handleFlowControlStart}
-                    disabled={flowControlIsRunning}
-                    className={`px-10 py-4 rounded-lg font-bold text-base whitespace-nowrap
-                               transition-all duration-300 flex items-center gap-3 flex-shrink-0 ${
-                      flowControlIsRunning
-                        ? 'bg-gradient-to-r from-green-500/20 to-emerald-500/10 border border-green-400/30 text-green-300 cursor-not-allowed opacity-60'
-                        : 'bg-gradient-to-r from-green-500/40 to-emerald-500/30 border border-green-400/80 text-green-200 hover:from-green-500/50 hover:to-emerald-500/40 shadow-lg shadow-green-500/20'
-                    }`}
-                    whileHover={flowControlIsRunning ? {} : { scale: 1.05 }}
-                    whileTap={flowControlIsRunning ? {} : { scale: 0.95 }}
-                  >
-                    START
-                  </motion.button>
-
-                  {/* Server Load Slider */}
-                  <div className="flex items-center gap-3 px-4 py-3 rounded-lg bg-gradient-to-r from-amber-500/20 to-orange-500/20 border border-amber-400/50 flex-shrink-0">
-                    <span className="text-amber-300 font-semibold text-sm whitespace-nowrap">Server Load:</span>
-                    <input
-                      type="range"
-                      min="0.1"
-                      max="1.0"
-                      step="0.1"
-                      value={flowControlDrainSpeed}
-                      onChange={(e) => setFlowControlDrainSpeed(parseFloat(e.target.value))}
-                      className="w-24 accent-amber-400 cursor-pointer"
-                    />
-                    <span className="text-amber-200 font-bold text-sm w-10">{Math.round(flowControlDrainSpeed * 100)}%</span>
-                  </div>
-
-                  {/* Simulate Zero Window Toggle */}
-                  <motion.button
-                    onClick={() => setFlowControlSimulateFullBuffer(prev => !prev)}
-                    disabled={flowControlIsRunning}
-                    className={`px-6 py-4 rounded-lg font-bold text-sm whitespace-nowrap
-                               transition-all duration-300 flex items-center gap-2 flex-shrink-0 ${
-                      flowControlIsRunning
-                        ? flowControlSimulateFullBuffer
-                          ? 'bg-gradient-to-r from-red-500/30 to-orange-500/20 border border-red-400/50 text-red-300 cursor-not-allowed opacity-70'
-                          : 'bg-gradient-to-r from-purple-500/20 to-violet-500/10 border border-purple-400/30 text-purple-300 cursor-not-allowed opacity-60'
-                        : flowControlSimulateFullBuffer
-                          ? 'bg-gradient-to-r from-red-500/50 to-orange-500/40 border-2 border-red-400/90 text-red-100 hover:from-red-500/60 hover:to-orange-500/50 shadow-lg shadow-red-500/30'
-                          : 'bg-gradient-to-r from-purple-500/40 to-violet-500/30 border border-purple-400/80 text-purple-200 hover:from-purple-500/50 hover:to-violet-500/40 shadow-lg shadow-purple-500/20'
-                    }`}
-                    whileHover={flowControlIsRunning ? {} : { scale: 1.05 }}
-                    whileTap={flowControlIsRunning ? {} : { scale: 0.95 }}
-                  >
-                    {flowControlSimulateFullBuffer ? 'Zero Window: ON' : 'Zero Window: OFF'}
-                  </motion.button>
-
-                  {/* RESET Button */}
-                  <motion.button
-                    onClick={handleFlowControlReset}
-                    className="px-12 py-4 rounded-lg bg-gradient-to-r from-red-500/50 to-red-600/40 
-                               border-2 border-red-400/80 text-red-100 font-bold text-base whitespace-nowrap
-                               hover:from-red-500/70 hover:to-red-600/60 hover:border-red-300
-                               transition-all duration-300 flex items-center gap-3 flex-shrink-0 
-                               shadow-lg shadow-red-500/30 hover:shadow-red-500/50"
-                    whileHover={{ scale: 1.08, boxShadow: '0 0 20px rgba(239, 68, 68, 0.6)' }}
-                    whileTap={{ scale: 0.92 }}
-                  >
-                    RESET
-                  </motion.button>
-                </div>
-                <p className="text-cyan-200/60 text-sm leading-relaxed font-light text-center px-4 mt-2">
-                  Use your mouse to rotate, scroll to zoom, and drag to pan. Click button to visualize sliding window, flow control process.
-                </p>
-              </div>
-            </div>
-          </motion.div>
-        )}
-
-        {/* Control Panel - For TCP vs UDP Concept */}
-        {isTcpVsUdpConcept && (
-          <motion.div
-            className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-slate-950 via-slate-950/95 to-transparent p-10 z-10 pointer-events-none"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.4, duration: 0.5 }}
-          >
-            <div className="max-w-6xl mx-auto">
-              {/* Protocol Info Header - Single Line with Spacing */}
-              <div className="text-center mb-8 flex flex-wrap justify-center items-center gap-4">
-                <span className={`text-lg font-bold ${tcpUdpIsTCP ? 'text-blue-400' : 'text-amber-400'}`}>{tcpUdpIsTCP ? 'TCP - Reliable Transfer' : 'UDP - Fast Transfer'}</span>
-                <span className={`text-sm ${tcpUdpIsTCP ? 'text-blue-300/80' : 'text-amber-300/80'}`}>{tcpUdpIsTCP ? 'Connection-Oriented | Ordered | ACK-based | Retransmission' : 'Connectionless | Unordered | No ACK | No Retransmission'}</span>
-                <span className={`text-xs font-semibold ${tcpUdpIsTCP ? 'text-emerald-400' : 'text-red-400'}`}>{tcpUdpIsTCP ? 'Reliability: 100% | All packets guaranteed' : 'Reliability: ~% | No guarantees'}</span>
-              </div>
-              {tcpUdpUiMessage && (
-                <motion.div 
-                  className="mb-14 p-5 rounded-lg bg-gradient-to-r from-blue-500/20 to-amber-500/20 border border-blue-400/50 backdrop-blur-sm"
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -10 }}
-                >
-                  <p className="text-blue-300 font-semibold text-center text-xl">
-                    {tcpUdpUiMessage}
-                  </p>
-                </motion.div>
-              )}
-              <div className="flex flex-col w-full gap-0 pointer-events-auto">
-                <div className="flex flex-wrap gap-4 justify-center items-center px-4">
-                  {/* START Button */}
-                  <motion.button
-                    onClick={handleTcpUdpStart}
-                    disabled={tcpUdpIsRunning}
-                    className={`px-10 py-4 rounded-lg font-bold text-base whitespace-nowrap
-                               transition-all duration-300 flex items-center gap-3 flex-shrink-0 ${
-                      tcpUdpIsRunning
-                        ? 'bg-gradient-to-r from-green-500/20 to-emerald-500/10 border border-green-400/30 text-green-300 cursor-not-allowed opacity-60'
-                        : 'bg-gradient-to-r from-green-500/40 to-emerald-500/30 border border-green-400/80 text-green-200 hover:from-green-500/50 hover:to-emerald-500/40 shadow-lg shadow-green-500/20'
-                    }`}
-                    whileHover={tcpUdpIsRunning ? {} : { scale: 1.05 }}
-                    whileTap={tcpUdpIsRunning ? {} : { scale: 0.95 }}
-                  >
-                    START
-                  </motion.button>
-
-                  {/* Protocol Toggle */}
-                  <motion.button
-                    onClick={() => { if (!tcpUdpIsRunning) setTcpUdpIsTCP(prev => !prev) }}
-                    disabled={tcpUdpIsRunning}
-                    className={`px-6 py-4 rounded-lg font-bold text-sm whitespace-nowrap
-                               transition-all duration-300 flex items-center gap-2 flex-shrink-0 ${
-                      tcpUdpIsRunning
-                        ? 'bg-gradient-to-r from-slate-500/20 to-slate-500/10 border border-slate-400/30 text-slate-300 cursor-not-allowed opacity-60'
-                        : tcpUdpIsTCP
-                          ? 'bg-gradient-to-r from-blue-500/50 to-cyan-500/40 border-2 border-blue-400/90 text-blue-100 hover:from-blue-500/60 hover:to-cyan-500/50 shadow-lg shadow-blue-500/30'
-                          : 'bg-gradient-to-r from-amber-500/50 to-orange-500/40 border-2 border-amber-400/90 text-amber-100 hover:from-amber-500/60 hover:to-orange-500/50 shadow-lg shadow-amber-500/30'
-                    }`}
-                    whileHover={tcpUdpIsRunning ? {} : { scale: 1.05 }}
-                    whileTap={tcpUdpIsRunning ? {} : { scale: 0.95 }}
-                  >
-                    {tcpUdpIsTCP ? 'Protocol: TCP' : 'Protocol: UDP'}
-                  </motion.button>
-
-                  {/* Simulate Packet Loss Toggle */}
-                  <motion.button
-                    onClick={() => { if (!tcpUdpIsRunning) setTcpUdpSimulateLoss(prev => !prev) }}
-                    disabled={tcpUdpIsRunning}
-                    className={`px-6 py-4 rounded-lg font-bold text-sm whitespace-nowrap
-                               transition-all duration-300 flex items-center gap-2 flex-shrink-0 ${
-                      tcpUdpIsRunning
-                        ? tcpUdpSimulateLoss
-                          ? 'bg-gradient-to-r from-red-500/30 to-orange-500/20 border border-red-400/50 text-red-300 cursor-not-allowed opacity-70'
-                          : 'bg-gradient-to-r from-purple-500/20 to-violet-500/10 border border-purple-400/30 text-purple-300 cursor-not-allowed opacity-60'
-                        : tcpUdpSimulateLoss
-                          ? 'bg-gradient-to-r from-red-500/50 to-orange-500/40 border-2 border-red-400/90 text-red-100 hover:from-red-500/60 hover:to-orange-500/50 shadow-lg shadow-red-500/30'
-                          : 'bg-gradient-to-r from-purple-500/40 to-violet-500/30 border border-purple-400/80 text-purple-200 hover:from-purple-500/50 hover:to-violet-500/40 shadow-lg shadow-purple-500/20'
-                    }`}
-                    whileHover={tcpUdpIsRunning ? {} : { scale: 1.05 }}
-                    whileTap={tcpUdpIsRunning ? {} : { scale: 0.95 }}
-                  >
-                    {tcpUdpSimulateLoss ? 'Packet Loss: ON' : 'Packet Loss: OFF'}
-                  </motion.button>
-
-                  {/* RESET Button */}
-                  <motion.button
-                    onClick={handleTcpUdpReset}
-                    className="px-12 py-4 rounded-lg bg-gradient-to-r from-red-500/50 to-red-600/40 
-                               border-2 border-red-400/80 text-red-100 font-bold text-base whitespace-nowrap
-                               hover:from-red-500/70 hover:to-red-600/60 hover:border-red-300
-                               transition-all duration-300 flex items-center gap-3 flex-shrink-0 
-                               shadow-lg shadow-red-500/30 hover:shadow-red-500/50"
-                    whileHover={{ scale: 1.08, boxShadow: '0 0 20px rgba(239, 68, 68, 0.6)' }}
-                    whileTap={{ scale: 0.92 }}
-                  >
-                    RESET
-                  </motion.button>
-                </div>
-                <p className="text-cyan-200/60 text-sm leading-relaxed font-light text-center px-4 mt-2">
-                  Use your mouse to rotate, scroll to zoom, and drag to pan. Click buttons to visualize TCP vs UDP connection scenarios.
-                </p>
-              </div>
-            </div>
-          </motion.div>
-        )}
-
-        {/* Info Panel - For Non-TCP/Non-Segmentation/Non-ACK/Non-FlowControl/Non-TcpVsUdp Concepts */}
-        {!isTCPConcept && !isSegmentationConcept && !isACKConcept && !isFlowControlConcept && !isTcpVsUdpConcept && (
+        {/* Info Panel - For Non-TCP/Non-Segmentation/Non-ACK Concepts */}
+        {!isTCPConcept && !isSegmentationConcept && !isACKConcept && (
           <motion.div
             className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-slate-950 via-slate-950/80 to-transparent p-8 z-10 pointer-events-none"
             initial={{ opacity: 0, y: 20 }}
@@ -862,7 +507,7 @@ export default function Scene3D({ selectedConceptId, selectedLayerId, onBack }) 
           </div>
         </motion.div>
 
-        {/* TCP Segmentation Info Panel - Top Right - Visible from Phase 3 onwards */}
+        {/* TCP Segmentation Info Panel - Top Right */}
         {isSegmentationConcept && segmentPhase >= 3 && (
           <motion.div
             key="tcp-panel"
@@ -872,97 +517,100 @@ export default function Scene3D({ selectedConceptId, selectedLayerId, onBack }) 
             transition={{ duration: 0.3 }}
             exit={{ opacity: 0, x: 20 }}
           >
-            <style>{`
-              .tcp-info-panel::-webkit-scrollbar { width: 8px; }
-              .tcp-info-panel::-webkit-scrollbar-track { background: rgba(15,23,42,0.3); borderRadius: 8px; }
-              .tcp-info-panel::-webkit-scrollbar-thumb { background: rgba(100,200,255,0.5); borderRadius: 8px; }
-              .tcp-info-panel::-webkit-scrollbar-thumb:hover { background: rgba(100,200,255,0.7); }
-            `}</style>
-            <div className="tcp-info-panel" style={{
-              background: 'linear-gradient(180deg, rgba(15,23,42,0.98), rgba(30,41,59,0.95))',
-              backdropFilter: 'blur(20px)',
-              border: '2px solid rgba(100,200,255,0.6)',
-              borderRadius: '12px',
-              padding: '12px',
-              width: '320px',
-              maxHeight: isSegmentationPanelMinimized ? '50px' : '520px',
-              height: isSegmentationPanelMinimized ? '50px' : 'auto',
-              overflowY: isSegmentationPanelMinimized ? 'hidden' : 'auto',
-              color: '#e0f2fe',
-              boxShadow: '0 0 30px rgba(56,189,248,0.5), 0 12px 32px rgba(0,0,0,0.85)',
-              fontFamily: 'monospace',
-              fontSize: '11px',
-              lineHeight: '1.5',
-              scrollBehavior: 'smooth',
-              transition: 'all 0.3s ease-in-out',
-            }}>
-              {/* Title with Minimize/Maximize Button */}
+            <div 
+              style={{
+                background: 'linear-gradient(180deg, rgba(15,23,42,0.98), rgba(30,41,59,0.95))',
+                backdropFilter: 'blur(20px)',
+                border: '2px solid rgba(100,200,255,0.6)',
+                borderRadius: '12px',
+                padding: '12px',
+                width: '320px',
+                maxHeight: isSegmentationPanelMinimized ? '60px' : '520px',
+                overflowY: isSegmentationPanelMinimized ? 'hidden' : 'auto',
+                color: '#e0f2fe',
+                boxShadow: '0 0 30px rgba(56,189,248,0.5), 0 12px 32px rgba(0,0,0,0.85)',
+                fontFamily: 'monospace',
+                fontSize: '11px',
+                lineHeight: '1.5',
+                scrollBehavior: 'smooth',
+                transition: 'max-height 0.4s ease-in-out',
+              }}>
               <div style={{
                 display: 'flex',
-                justifyContent: 'space-between',
                 alignItems: 'center',
-                marginBottom: isSegmentationPanelMinimized ? '0' : '8px',
-                paddingBottom: isSegmentationPanelMinimized ? '0' : '6px',
-                borderBottom: isSegmentationPanelMinimized ? 'none' : '2px solid rgba(56,189,248,0.6)',
-                transition: 'all 0.3s ease-in-out',
+                justifyContent: 'space-between',
+                fontSize: '13px',
+                fontWeight: '900',
+                marginBottom: '8px',
+                paddingBottom: '6px',
+                borderBottom: '2px solid rgba(56,189,248,0.6)',
+                color: '#38bdf8',
+                letterSpacing: '1px',
               }}>
-                <div style={{
-                  fontSize: '13px',
-                  fontWeight: '900',
-                  color: '#38bdf8',
-                  letterSpacing: '1px',
-                }}>
-                  🔗 TCP SEGMENTATION
-                </div>
-                <button
+                <span>🔗 TCP SEGMENTATION</span>
+                <motion.button
                   onClick={() => setIsSegmentationPanelMinimized(!isSegmentationPanelMinimized)}
+                  whileHover={{ scale: 1.15 }}
+                  whileTap={{ scale: 0.95 }}
                   style={{
-                    background: 'rgba(56,189,248,0.2)',
-                    border: '1px solid rgba(56,189,248,0.5)',
-                    borderRadius: '4px',
-                    color: '#38bdf8',
+                    background: 'linear-gradient(135deg, rgba(56,189,248,0.3), rgba(100,200,255,0.2))',
+                    border: '1.5px solid rgba(56,189,248,0.6)',
+                    borderRadius: '6px',
                     padding: '4px 8px',
                     cursor: 'pointer',
+                    color: '#38bdf8',
                     fontSize: '12px',
-                    fontWeight: 'bold',
+                    fontWeight: '900',
                     transition: 'all 0.2s ease-in-out',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    minWidth: '30px',
-                    height: '24px',
                   }}
                   onMouseEnter={(e) => {
-                    e.target.style.background = 'rgba(56,189,248,0.4)'
-                    e.target.style.boxShadow = '0 0 10px rgba(56,189,248,0.5)'
+                    e.target.style.background = 'linear-gradient(135deg, rgba(56,189,248,0.5), rgba(100,200,255,0.4))'
+                    e.target.style.boxShadow = '0 0 15px rgba(56,189,248,0.6)'
                   }}
                   onMouseLeave={(e) => {
-                    e.target.style.background = 'rgba(56,189,248,0.2)'
+                    e.target.style.background = 'linear-gradient(135deg, rgba(56,189,248,0.3), rgba(100,200,255,0.2))'
                     e.target.style.boxShadow = 'none'
                   }}
                 >
                   {isSegmentationPanelMinimized ? '▼' : '▲'}
-                </button>
+                </motion.button>
               </div>
 
-              {/* Content - Hidden when Minimized */}
               {!isSegmentationPanelMinimized && (
-                <>
-                {/* Phase Information */}
-                <div style={{
-                  background: 'rgba(14,165,233,0.15)',
-                  border: '1px solid rgba(56,189,248,0.4)',
-                  borderRadius: '6px',
-                  padding: '8px',
-                  marginBottom: '8px',
-                }}>
-                  <div style={{ fontSize: '10px', fontWeight: '900', color: '#34d399', marginBottom: '4px' }}>
-                    📍 CURRENT PHASE
+                <div style={{ fontSize: '10px', color: '#cbd5e1', lineHeight: '1.6' }}>
+                  <div style={{ background: 'rgba(14,165,233,0.15)', border: '1px solid rgba(56,189,248,0.4)', borderRadius: '6px', padding: '8px', marginBottom: '8px' }}>
+                    <div style={{ fontWeight: '900', color: '#34d399', marginBottom: '4px' }}>Phase {segmentPhase}</div>
+                    <div>Mode: {inOrderMode ? 'In-Order' : 'Out-of-Order'}</div>
+                    <div>Segments: 4 × 1460 bytes</div>
                   </div>
-                  <div style={{ fontSize: '11px', color: '#cbd5e1' }}>
-                    {segmentPhase === 1 && '➊ Data Block: 5840 bytes ready'}
-                    {segmentPhase === 2 && '➋ Cutting: Splitting into segments...'}
-                    {segmentPhase === 3 && '➌ Headers: TCP headers attached to segments'}
+
+                  <div style={{ background: 'rgba(59,130,246,0.1)', border: '1px solid rgba(59,130,246,0.3)', borderRadius: '6px', padding: '8px' }}>
+                    <div style={{ fontWeight: '900', color: '#93c5fd', marginBottom: '4px' }}>How Segmentation Works</div>
+                    <div>Data is split into segments with sequence numbers for reliable delivery.</div>
+                    <div style={{ marginTop: '4px', fontSize: '9px', color: '#a5f3fc' }}>
+                      Seg1: SEQ=1-1460 | Seg2: SEQ=1461-2920 | Seg3: SEQ=2921-4380 | Seg4: SEQ=4381-5840
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          </motion.div>
+        )}
+
+              <div style={{
+                background: 'rgba(14,165,233,0.15)',
+                border: '1px solid rgba(56,189,248,0.4)',
+                borderRadius: '6px',
+                padding: '8px',
+                marginBottom: '8px',
+              }}>
+                <div style={{ fontSize: '10px', fontWeight: '900', color: '#34d399', marginBottom: '4px' }}>
+                  📍 CURRENT PHASE
+                </div>
+                <div style={{ fontSize: '11px', color: '#cbd5e1' }}>
+                  {segmentPhase === 1 && '➊ Data Block: 5840 bytes ready'}
+                  {segmentPhase === 2 && '➋ Cutting: Splitting into segments...'}
+                  {segmentPhase === 3 && '➌ Headers: TCP headers attached to segments'}
                   {segmentPhase === 4 && `➍ Transmission: Segments ${inOrderMode ? '[1,2,3,4]' : '[1,3,2,4]'} → server`}
                   {segmentPhase >= 5 && '➎ Out-of-Order: Segments arrive [1,3,2,4], buffer reorders to [1,2,3,4]'}
                 </div>
@@ -1568,9 +1216,9 @@ export default function Scene3D({ selectedConceptId, selectedLayerId, onBack }) 
                           borderRadius: '3px',
                           border: '1px solid rgba(34,197,94,0.2)',
                         }}>
-                          <div>🟩 <span style={{background: '#00D4FF', color: '#000', fontWeight: '900', fontSize: '12px', padding: '3px 7px', borderRadius: '5px', display: 'inline-block', border: '3px solid #0088CC', boxShadow: '0 0 8px rgba(0,212,255,0.8)'}}>[1]</span>: [SEG 1] ✓ SEQ=1, 1460 bytes</div>
-                          <div>🟩 <span style={{background: '#D946EF', color: '#000', fontWeight: '900', fontSize: '12px', padding: '3px 7px', borderRadius: '5px', display: 'inline-block', border: '3px solid #A855F7', boxShadow: '0 0 8px rgba(217,70,239,0.8)'}}>[2]</span>: [SEG 2] ✓ SEQ=1461, 1460 bytes</div>
-                          <div>🟩 <span style={{background: '#FF9500', color: '#000', fontWeight: '900', fontSize: '12px', padding: '3px 7px', borderRadius: '5px', display: 'inline-block', border: '3px solid #D97706', boxShadow: '0 0 8px rgba(255,149,0,0.8)'}}>[3]</span>: [SEG 3] ✓ SEQ=2921, 1460 bytes</div>
+                          <div>🟩 <span style={{background: '#00D4FF', color: '#000', fontWeight: '900', fontSize: '12px', padding: '3px 7px', borderRadius: '5px', display: 'inline-block', border: '3px solid #0088CC', boxShadow: '0 0 8px rgba(0,212,255,0.8)'}}>[1]</span>: [SEG 1] ✓ SEQ=1 (1460 bytes)</div>
+                          <div>🟩 <span style={{background: '#D946EF', color: '#000', fontWeight: '900', fontSize: '12px', padding: '3px 7px', borderRadius: '5px', display: 'inline-block', border: '3px solid #A855F7', boxShadow: '0 0 8px rgba(217,70,239,0.8)'}}>[2]</span>: [SEG 2] ✓ SEQ=1461 (1460 bytes) ← <span style={{color: '#4ade80', fontWeight: 'bold'}}>HOLE FILLED! 🎯</span></div>
+                          <div>🟩 <span style={{background: '#FF9500', color: '#000', fontWeight: '900', fontSize: '12px', padding: '3px 7px', borderRadius: '5px', display: 'inline-block', border: '3px solid #D97706', boxShadow: '0 0 8px rgba(255,149,0,0.8)'}}>[3]</span>: [SEG 3] ✓ SEQ=2921 (1460 bytes)</div>
                           <div>⬜ <span style={{background: '#22C55E', color: '#000', fontWeight: '900', fontSize: '12px', padding: '3px 7px', borderRadius: '5px', display: 'inline-block', border: '3px solid #16A34A', boxShadow: '0 0 8px rgba(34,197,94,0.8)'}}>[4]</span>: [EMPTY] (waiting for Seg 4)</div>
                         </div>
                         <div style={{ 
@@ -1793,13 +1441,13 @@ export default function Scene3D({ selectedConceptId, selectedLayerId, onBack }) 
                     <div>Seg 4: SEQ=4381, LEN=1459</div>
                   </div>
                 )}
-              </div>
                 </>
               )}
             </div>
           </motion.div>
         )}
-      </motion.div>
-    </AnimatePresence>
+      </AnimatePresence>
+    </motion.div>
+    )
   )
 }
