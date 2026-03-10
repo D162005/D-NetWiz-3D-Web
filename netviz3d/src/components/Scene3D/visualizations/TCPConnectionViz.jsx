@@ -22,25 +22,42 @@ const DEBUG = false
 // ═════════════════════════════════════════════════════════════════
 
 function HandshakeStage({ connectionState, cableOpacity = 1 }) {
-  // Node colors
-  const baseColor = '#06b6d4'
-  const successColor = '#10b981'  // Green for successful connection
-  const failureColor = '#ef4444'  // Red for failures and closed connections
+  // Client Node colors - Cyan
+  const clientBaseColor = '#06b6d4'
+  const clientSuccessColor = '#10b981'  // Green for successful connection
+  const clientFailureColor = '#ef4444'  // Red for failures and closed connections
   
-  // Determine color based on connection state
-  const getNodeColor = (state) => {
+  // Server Node colors - Yellow
+  const serverBaseColor = '#eab308'
+  const serverSuccessColor = '#22c55e'  // Green for successful connection
+  const serverFailureColor = '#ef4444'  // Red for failures and closed connections
+  
+  // Determine client color based on connection state
+  const getClientColor = (state) => {
     if (state === 'ESTABLISHED') {
-      return successColor  // Green for successful handshake
+      return clientSuccessColor  // Green for successful handshake
     } else if (state === 'TIMEOUT' || state === 'REFUSED' || state === 'TIME_WAIT') {
-      return failureColor  // Red for failures and closing completion
+      return clientFailureColor  // Red for failures and closing completion
     } else if (state === 'CLOSED') {
-      return baseColor  // Return to default cyan when fully closed
+      return clientBaseColor  // Return to default cyan when fully closed
     }
-    return baseColor  // Cyan during handshake process
+    return clientBaseColor  // Cyan during handshake process
   }
 
-  const clientColor = getNodeColor(connectionState)
-  const serverColor = getNodeColor(connectionState)
+  // Determine server color based on connection state
+  const getServerColor = (state) => {
+    if (state === 'ESTABLISHED') {
+      return serverSuccessColor  // Green for successful handshake
+    } else if (state === 'TIMEOUT' || state === 'REFUSED' || state === 'TIME_WAIT') {
+      return serverFailureColor  // Red for failures and closing completion
+    } else if (state === 'CLOSED') {
+      return serverBaseColor  // Return to default yellow when fully closed
+    }
+    return serverBaseColor  // Yellow during handshake process
+  }
+
+  const clientColor = getClientColor(connectionState)
+  const serverColor = getServerColor(connectionState)
 
   return (
     <group>
@@ -66,17 +83,29 @@ function HandshakeStage({ connectionState, cableOpacity = 1 }) {
           <sphereGeometry args={[0.15, 16, 16]} />
           <meshPhongMaterial color={clientColor} emissive={clientColor} emissiveIntensity={0.5} />
         </mesh>
+
+        {/* CLIENT Label */}
+        <Text
+          position={[0, -1.3, 0]}
+          fontSize={0.35}
+          color={clientColor}
+          anchorX="center"
+          anchorY="top"
+          fontWeight="bold"
+        >
+          CLIENT
+        </Text>
       </group>
 
       {/* ── CONNECTION CABLE ──────────────────────────────────────── */}
       <group>
-        {/* Core transmission line - bright cyan */}
+        {/* Core transmission line - neutral white */}
         <mesh position={[0, 0, 0]} rotation={[0, 0, Math.PI / 2]}>
           <cylinderGeometry args={[0.08, 0.08, 8.5, 32]} />
           <meshPhongMaterial 
-            color="#06b6d4" 
-            emissive="#06b6d4" 
-            emissiveIntensity={1}
+            color="#e0e7ff" 
+            emissive="#c0d9ff" 
+            emissiveIntensity={0.8}
             metalness={0.5}
             roughness={0.2}
             transparent
@@ -84,23 +113,23 @@ function HandshakeStage({ connectionState, cableOpacity = 1 }) {
           />
         </mesh>
 
-        {/* Insulation layer - semi-transparent */}
+        {/* Insulation layer - semi-transparent neutral */}
         <mesh position={[0, 0.05, 0]} rotation={[0, 0, Math.PI / 2]}>
           <cylinderGeometry args={[0.14, 0.14, 8.5, 32]} />
           <meshPhongMaterial 
-            color="#0891b2" 
-            emissive="#0891b2"
+            color="#f3f4f6" 
+            emissive="#e5e7eb"
             emissiveIntensity={0.5}
             transparent
             opacity={0.6 * cableOpacity}
           />
         </mesh>
 
-        {/* Outer glow layer */}
+        {/* Outer glow layer - subtle white glow */}
         <mesh position={[0, -0.05, 0]} rotation={[0, 0, Math.PI / 2]}>
           <cylinderGeometry args={[0.2, 0.2, 8.5, 32]} />
           <meshBasicMaterial 
-            color="#06b6d4" 
+            color="#ffffff" 
             transparent 
             opacity={0.15 * cableOpacity}
           />
@@ -119,8 +148,8 @@ function HandshakeStage({ connectionState, cableOpacity = 1 }) {
         </mesh>
       </group>
 
-      {/* Cable glow point light */}
-      <pointLight position={[0, 0, 0]} intensity={2} distance={10} color="#06b6d4" />
+      {/* Cable glow point light - Neutral white blend */}
+      <pointLight position={[0, 0, 0]} intensity={2} distance={10} color="#ffffff" />
 
       {/* ── SERVER NODE (Right, x = 4) ────────────────────────────── */}
       <group position={[4, 0, 0]}>
@@ -144,6 +173,18 @@ function HandshakeStage({ connectionState, cableOpacity = 1 }) {
           <sphereGeometry args={[0.15, 16, 16]} />
           <meshPhongMaterial color={serverColor} emissive={serverColor} emissiveIntensity={0.5} />
         </mesh>
+
+        {/* SERVER Label */}
+        <Text
+          position={[0, -1.3, 0]}
+          fontSize={0.35}
+          color={serverColor}
+          anchorX="center"
+          anchorY="top"
+          fontWeight="bold"
+        >
+          SERVER
+        </Text>
       </group>
     </group>
   )
@@ -817,7 +858,7 @@ function AnimatedPackets({ isHandshaking, onHandshakeComplete, onStateChange, fa
     return () => {
       timeline.kill()
     }
-  }, [isHandshaking, isClosing, onHandshakeComplete, onStateChange, failureType])
+  }, [isHandshaking, isClosing, onHandshakeComplete, onStateChange, failureType, onCableOpacityChange])
 
   return (
     <group>
@@ -936,8 +977,10 @@ export default function TCPConnectionViz({ triggerScenario, onStateUpdate, trigg
     setIsClosing(false)
 
     // Auto reset after delay to show the final color briefly then return to default
+    // Delayed state update is intentional and avoids cascading renders
     setTimeout(() => {
-      setConnectionState('CLOSED')
+      // Defer setState to avoid cascading renders
+      setTimeout(() => setConnectionState('CLOSED'), 0)
       setStatusMessage('Ready')
       setFailureType(null)
       setCableOpacity(1)
@@ -952,27 +995,31 @@ export default function TCPConnectionViz({ triggerScenario, onStateUpdate, trigg
 
     // Handle closing trigger - takes priority
     if (triggerClosing) {
-      // Start closing animation immediately
-      setIsClosing(true)
+      // Start closing animation immediately (defer to avoid cascading renders)
+      setTimeout(() => setIsClosing(true), 0)
       return
     }
 
     // Handle opening trigger (only if no closing animation)
     if (triggerScenario && !triggerClosing) {
-      // Reset state for new animation
-      setConnectionState('CLOSED')
-      setIsHandshaking(false)
-      setIsClosing(false)
-      setCableOpacity(1)
+      // Reset state for new animation (defer all setState calls)
+      setTimeout(() => {
+        setConnectionState('CLOSED')
+        setIsHandshaking(false)
+        setIsClosing(false)
+        setCableOpacity(1)
+      }, 0)
 
-      // Set failure type based on trigger
-      if (triggerScenario === 'success') {
-        setFailureType(null)
-      } else if (triggerScenario === 'timeout') {
-        setFailureType('TIMEOUT')
-      } else if (triggerScenario === 'refused') {
-        setFailureType('REFUSED')
-      }
+      // Set failure type based on trigger (defer setState)
+      setTimeout(() => {
+        if (triggerScenario === 'success') {
+          setFailureType(null)
+        } else if (triggerScenario === 'timeout') {
+          setFailureType('TIMEOUT')
+        } else if (triggerScenario === 'refused') {
+          setFailureType('REFUSED')
+        }
+      }, 0)
 
       // Start animation after state is reset
       const timer = setTimeout(() => {

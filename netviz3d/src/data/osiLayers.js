@@ -59,6 +59,13 @@ export const OSI_LAYERS = [
         visualGoal: 'Show data being split into segments',
       },
       {
+        id: 'trans-retrans',
+        name: 'Multiplexing and Demultiplexing',
+        meaning: 'Combining multiple streams for transmission and separating them at the receiver',
+        example: 'Web browser and email client both use TCP, identified by port numbers',
+        visualGoal: 'Show multiple data streams merged and then separated by port numbers',
+      },
+      {
         id: 'trans-tcp-conn',
         name: 'TCP Connection',
         meaning: 'Establishing a reliable connection via TCP handshake',
@@ -67,17 +74,10 @@ export const OSI_LAYERS = [
       },
       {
         id: 'trans-ack',
-        name: 'ACK',
-        meaning: 'Acknowledgment that data was received successfully',
-        example: 'Receiver sends ACK=12345 to confirm receipt',
-        visualGoal: 'Show acknowledgment packets flowing back',
-      },
-      {
-        id: 'trans-retrans',
-        name: 'Retransmission',
-        meaning: 'Resending data packets if ACK is not received',
-        example: 'Timeout after 1 second, resend segment',
-        visualGoal: 'Visualize timeout and retry mechanism',
+        name: 'ACK and Retransmission',
+        meaning: 'Acknowledgment that data was received successfully and retransmission if not acknowledged',
+        example: 'Receiver sends ACK=12345 to confirm receipt; sender retransmits if ACK is not received',
+        visualGoal: 'Show acknowledgment packets flowing back and retransmission on timeout',
       },
       {
         id: 'trans-flow-ctrl',

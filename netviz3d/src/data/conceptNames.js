@@ -51,15 +51,15 @@ export const conceptMapping = {
     icon: '🤝'
   },
   'trans-ack': {
-    name: 'ACK Mechanism',
-    fullName: 'Acknowledgment Protocol',
+    name: 'ACK & Retransmission',
+    fullName: 'Acknowledgment & Retransmission Protocol',
     color: '#93c5fd',
     layer: 'Transport',
     icon: '✓'
   },
   'trans-retrans': {
-    name: 'Retransmission',
-    fullName: 'Packet Retransmission',
+    name: 'Multiplexing and Demultiplexing',
+    fullName: 'Packets Multiplexing and Demultiplexing',
     color: '#bfdbfe',
     layer: 'Transport',
     icon: '🔄'
