@@ -6,7 +6,8 @@ import IPFragmentationStage from './IPFragmentationStage'
 
 /**
  * Network Layer Visualization - Per-Concept Models
- * IP Addressing | Subnetting | Routing Table | Forwarding | Path Selection | TTL | Packet Drop
+ * IPv4 Header | Fragmentation | TTL | Network/Host ID | Classful Addressing | Subnetting |
+ * Supernetting | CIDR | VLSM | Forwarding Table | Routing Algorithm
  */
 
 // IP Addressing Visualization
@@ -345,18 +346,29 @@ export default function NetworkLayerViz({ conceptId = 'net-ip-addr', ipFragIsAtt
         />
       )
     case 'net-ip-addr':
+export default function NetworkLayerViz({ conceptId = 'net-ipv4-header', isFragmentationAttempting = false, isDFEnabled = false, isFragmentationOutOfOrder = false, showICMPError = false }) {
+  switch (conceptId) {
+    case 'net-ipv4-header':
       return <IPAddressingViz />
-    case 'net-subnetting':
-      return <SubnettingViz />
-    case 'net-routing-table':
-      return <RoutingTableViz />
-    case 'net-forwarding':
-      return <ForwardingViz />
-    case 'net-path-selection':
-      return <PathSelectionViz />
+    case 'net-fragmentation':
+      return <IPFragmentationStage isAttempting={isFragmentationAttempting} isDFEnabled={isDFEnabled} isOutOfOrder={isFragmentationOutOfOrder} showICMPError={showICMPError} />
     case 'net-ttl':
       return <TTLViz />
-    case 'net-pkt-drop':
+    case 'net-network-host-id':
+      return <IPAddressingViz />
+    case 'net-classful-addressing':
+      return <PathSelectionViz />
+    case 'net-subnetting':
+      return <SubnettingViz />
+    case 'net-supernetting':
+      return <RoutingTableViz />
+    case 'net-cidr':
+      return <ForwardingViz />
+    case 'net-vlsm':
+      return <PathSelectionViz />
+    case 'net-forwarding-table':
+      return <RoutingTableViz />
+    case 'net-routing-algorithm':
       return <PacketDropViz />
     default:
       return <IPAddressingViz />
