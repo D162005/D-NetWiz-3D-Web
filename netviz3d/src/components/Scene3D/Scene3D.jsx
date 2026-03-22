@@ -43,12 +43,18 @@ export default function Scene3D({ selectedConceptId, selectedLayerId, onBack }) 
   const [fragmentation_isOutOfOrder, setFragmentation_isOutOfOrder] = useState(false)
   const [fragmentationUiMessage, setFragmentationUiMessage] = useState('')
   const [fragmentation_showICMPError, setFragmentation_showICMPError] = useState(false)
+  const [congestionCtrlIsRunning, setCongestionCtrlIsRunning] = useState(false)
+  const [congestionCtrlUiMessage, setCongestionCtrlUiMessage] = useState('')
+  const [congestionCtrlResetTrigger, setCongestionCtrlResetTrigger] = useState(0)
+  const [congestionCtrlNetworkCongestionTrigger, setCongestionCtrlNetworkCongestionTrigger] = useState(0)
+  const [congestionCtrlPanelHeight, setCongestionCtrlPanelHeight] = useState(200)
   const isTCPConcept = selectedConceptId === 'trans-tcp-conn'
   const isSegmentationConcept = selectedConceptId === 'trans-segmentation'
   const isACKConcept = selectedConceptId === 'trans-ack'
   const isFlowControlConcept = selectedConceptId === 'trans-flow-ctrl'
   const isTcpVsUdpConcept = selectedConceptId === 'trans-tcp-vs-udp'
   const isFragmentationConcept = selectedConceptId === 'net-fragmentation'
+  const isCongestionControlConcept = selectedConceptId === 'trans-congestion-ctrl'
   const orbitControlsRef = useRef(null)
   const congestionCtrlPanelRef = useRef(null)
 
@@ -375,6 +381,10 @@ export default function Scene3D({ selectedConceptId, selectedLayerId, onBack }) 
                   isDFEnabled={isFragmentationConcept ? fragmentation_isDFEnabled : undefined}
                   isFragmentationOutOfOrder={isFragmentationConcept ? fragmentation_isOutOfOrder : undefined}
                   showICMPError={isFragmentationConcept ? fragmentation_showICMPError : undefined}
+                  congestionCtrlIsRunning={isCongestionControlConcept ? congestionCtrlIsRunning : undefined}
+                  onCongestionCtrlMessage={isCongestionControlConcept ? setCongestionCtrlUiMessage : undefined}
+                  congestionCtrlResetTrigger={isCongestionControlConcept ? congestionCtrlResetTrigger : undefined}
+                  congestionCtrlNetworkCongestionTrigger={isCongestionControlConcept ? congestionCtrlNetworkCongestionTrigger : undefined}
                 />
               </Suspense>
             </Canvas>
