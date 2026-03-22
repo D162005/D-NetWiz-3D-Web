@@ -38,28 +38,17 @@ export default function Scene3D({ selectedConceptId, selectedLayerId, onBack }) 
   const [tcpUdpUiMessage, setTcpUdpUiMessage] = useState('')
   const [tcpUdpResetTrigger, setTcpUdpResetTrigger] = useState(0)
   const [tcpUdpSimulateLoss, setTcpUdpSimulateLoss] = useState(false)
-  const [multiplexingIsRunning, setMultiplexingIsRunning] = useState(false)
-  const [multiplexingUiMessage, setMultiplexingUiMessage] = useState('')
-  const [multiplexingResetTrigger, setMultiplexingResetTrigger] = useState(0)
-  const [congestionCtrlIsRunning, setCongestionCtrlIsRunning] = useState(false)
-  const [congestionCtrlUiMessage, setCongestionCtrlUiMessage] = useState('')
-  const [congestionCtrlResetTrigger, setCongestionCtrlResetTrigger] = useState(0)
-  const [congestionCtrlNetworkCongestionTrigger, setCongestionCtrlNetworkCongestionTrigger] = useState(0)
-  const [congestionCtrlDisplayValues, setCongestionCtrlDisplayValues] = useState({
-    cwnd: 1,
-    ssthresh: 8,
-    maxCwnd: 25,
-    protocolState: 'IDLE',
-    stateColor: '#9ca3af',
-  })
-  const [congestionCtrlPanelHeight, setCongestionCtrlPanelHeight] = useState(220)
+  const [fragmentation_isAttempting, setFragmentation_isAttempting] = useState(false)
+  const [fragmentation_isDFEnabled, setFragmentation_isDFEnabled] = useState(false)
+  const [fragmentation_isOutOfOrder, setFragmentation_isOutOfOrder] = useState(false)
+  const [fragmentationUiMessage, setFragmentationUiMessage] = useState('')
+  const [fragmentation_showICMPError, setFragmentation_showICMPError] = useState(false)
   const isTCPConcept = selectedConceptId === 'trans-tcp-conn'
   const isSegmentationConcept = selectedConceptId === 'trans-segmentation'
   const isACKConcept = selectedConceptId === 'trans-ack'
   const isFlowControlConcept = selectedConceptId === 'trans-flow-ctrl'
   const isTcpVsUdpConcept = selectedConceptId === 'trans-tcp-vs-udp'
-  const isMultiplexingConcept = selectedConceptId === 'trans-retrans'
-  const isCongestionControlConcept = selectedConceptId === 'trans-congestion-ctrl'
+  const isFragmentationConcept = selectedConceptId === 'net-fragmentation'
   const orbitControlsRef = useRef(null)
   const congestionCtrlPanelRef = useRef(null)
 
@@ -213,6 +202,42 @@ export default function Scene3D({ selectedConceptId, selectedLayerId, onBack }) 
     }, 100)
   }
 
+  const handleFragmentationReset = () => {
+    // Reset all fragmentation states
+    setFragmentation_isAttempting(false)
+    setFragmentation_isDFEnabled(false)
+    setFragmentation_isOutOfOrder(false)
+    setFragmentation_showICMPError(false)
+    setFragmentationUiMessage('')
+    // Show reset confirmation feedback
+    setTimeout(() => {
+      setFragmentationUiMessage('✅ Visualization reset - ready for new transmission attempt')
+      setTimeout(() => {
+        setFragmentationUiMessage('')
+      }, 2000)
+    }, 100)
+  }
+
+  const handleFragmentationICMPError = () => {
+    // Trigger ICMP error scenario
+    setFragmentation_showICMPError(true)
+    setFragmentation_isDFEnabled(true)
+    setFragmentation_isAttempting(true)
+    setFragmentationUiMessage('📤 Sending 1500-byte datagram with DF flag enabled...')
+    setTimeout(() => {
+      setFragmentationUiMessage('❌ ERROR: Packet too large for MTU (1500 > 500)')
+    }, 800)
+    setTimeout(() => {
+      setFragmentationUiMessage('🔴 ICMP Error Message Generated: Destination Unreachable (Fragmentation Needed)')
+    }, 2200)
+    setTimeout(() => {
+      setFragmentationUiMessage('📨 ICMP Error returned to sender with required MTU size (500 bytes)')
+    }, 4000)
+    setTimeout(() => {
+      setFragmentation_isAttempting(false)
+    }, 5500)
+  }
+
   const setACKUiMessage = (message) => {
     setAckUiMessage(message)
   }
@@ -297,25 +322,22 @@ export default function Scene3D({ selectedConceptId, selectedLayerId, onBack }) 
             </div>
           }>
             <Canvas
-              camera={{ position: [0, 0.5, 8.5], fov: 54 }}
+              camera={{ position: [0, 10, 10], fov: 54 }}
               className="w-full h-full"
               style={{ background: '#0f172a' }}
             >
               <color attach="background" args={['#0f172a']} />
-              <PerspectiveCamera makeDefault position={[0, 0.5, 8.5]} fov={54} />
+              <PerspectiveCamera makeDefault position={[0, 10, 10]} fov={54} />
               <OrbitControls
                 ref={orbitControlsRef}
                 enableZoom={true}
                 enablePan={true}
                 enableRotate={true}
-                autoRotate={true}
-                autoRotateSpeed={2}
-                onStart={() => {
-                  // Stop auto-rotation when user starts interacting
-                  if (orbitControlsRef.current) {
-                    orbitControlsRef.current.autoRotate = false
-                  }
-                }}
+                autoRotate={false}
+                enableDamping={true}
+                dampingFactor={0.05}
+                minPolarAngle={1.0}
+                maxPolarAngle={1.0}
               />
               
               {/* Lighting */}
@@ -349,14 +371,10 @@ export default function Scene3D({ selectedConceptId, selectedLayerId, onBack }) 
                   onTcpUdpMessage={isTcpVsUdpConcept ? setTcpUdpUiMessage : undefined}
                   tcpUdpResetTrigger={isTcpVsUdpConcept ? tcpUdpResetTrigger : undefined}
                   tcpUdpSimulateLoss={isTcpVsUdpConcept ? tcpUdpSimulateLoss : undefined}
-                  multiplexingIsRunning={isMultiplexingConcept ? multiplexingIsRunning : undefined}
-                  onMultiplexingMessage={isMultiplexingConcept ? setMultiplexingUiMessage : undefined}
-                  multiplexingResetTrigger={isMultiplexingConcept ? multiplexingResetTrigger : undefined}
-                  congestionCtrlIsRunning={isCongestionControlConcept ? congestionCtrlIsRunning : undefined}
-                  onCongestionCtrlMessage={isCongestionControlConcept ? setCongestionCtrlUiMessage : undefined}
-                  congestionCtrlResetTrigger={isCongestionControlConcept ? congestionCtrlResetTrigger : undefined}
-                  onCongestionCtrlStateUpdate={isCongestionControlConcept ? setCongestionCtrlDisplayValues : undefined}
-                  congestionCtrlNetworkCongestionTrigger={isCongestionControlConcept ? congestionCtrlNetworkCongestionTrigger : undefined}
+                  isFragmentationAttempting={isFragmentationConcept ? fragmentation_isAttempting : undefined}
+                  isDFEnabled={isFragmentationConcept ? fragmentation_isDFEnabled : undefined}
+                  isFragmentationOutOfOrder={isFragmentationConcept ? fragmentation_isOutOfOrder : undefined}
+                  showICMPError={isFragmentationConcept ? fragmentation_showICMPError : undefined}
                 />
               </Suspense>
             </Canvas>
@@ -908,8 +926,8 @@ export default function Scene3D({ selectedConceptId, selectedLayerId, onBack }) 
           </motion.div>
         )}
 
-        {/* Control Panel - For Multiplexing and Demultiplexing Concept */}
-        {isMultiplexingConcept && (
+        {/* Control Panel - For Fragmentation Concept */}
+        {isFragmentationConcept && (
           <motion.div
             className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-slate-950 via-slate-950/90 to-transparent p-8 z-10 pointer-events-none"
             initial={{ opacity: 0, y: 20 }}
@@ -919,332 +937,101 @@ export default function Scene3D({ selectedConceptId, selectedLayerId, onBack }) 
             <div className="max-w-5xl mx-auto">
               {/* Status Message */}
               <div className="mb-6 p-4 rounded-lg bg-slate-900/50 border border-cyan-500/30">
-                <motion.p 
-                  className="text-cyan-300 font-semibold text-center text-base"
-                  key={multiplexingUiMessage}
-                  initial={{ opacity: 0, y: -5 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.3 }}
-                >
-                  {multiplexingUiMessage || 'Ready'}
-                </motion.p>
+                <p className="text-cyan-300 font-semibold text-center">
+                  {fragmentationUiMessage || 'Ready to attempt transmission'}
+                </p>
               </div>
 
               {/* Control Buttons */}
-              <div className="flex flex-nowrap gap-3 justify-center items-center pointer-events-auto overflow-x-auto px-4 md:px-8">
+              <div className="flex flex-wrap gap-3 justify-center items-center pointer-events-auto px-4">
+                {/* DF Flag Toggle */}
                 <motion.button
-                  onClick={handleMultiplexingStart}
-                  disabled={multiplexingIsRunning}
+                  onClick={() => setFragmentation_isDFEnabled(!fragmentation_isDFEnabled)}
                   className={`px-6 py-3 rounded-lg font-semibold text-sm whitespace-nowrap
-                             transition-all duration-300 flex items-center gap-2 flex-shrink-0 ${
-                    multiplexingIsRunning
-                      ? 'bg-gradient-to-r from-green-500/20 to-emerald-500/10 border border-green-400/30 text-green-300 cursor-not-allowed opacity-60'
-                      : 'bg-gradient-to-r from-green-500/40 to-emerald-500/30 border border-green-400/80 text-green-200 hover:from-green-500/50 hover:to-emerald-500/40 shadow-lg shadow-green-500/20'
+                             transition-all duration-300 flex items-center gap-2 shrink-0 ${
+                    fragmentation_isDFEnabled
+                      ? 'bg-gradient-to-r from-red-500/40 to-rose-500/30 border border-red-400/60 text-red-300 hover:from-red-500/60 hover:to-rose-500/50'
+                      : 'bg-gradient-to-r from-blue-500/40 to-cyan-500/30 border border-blue-400/60 text-blue-300 hover:from-blue-500/60 hover:to-cyan-500/50'
                   }`}
-                  whileHover={multiplexingIsRunning ? {} : { scale: 1.05 }}
-                  whileTap={multiplexingIsRunning ? {} : { scale: 0.95 }}
-                >
-                  <span>▶️</span> Start Animation
-                </motion.button>
-
-                {/* Divider */}
-                <div className="h-8 w-px bg-gradient-to-b from-transparent via-cyan-500/30 to-transparent mx-2"></div>
-
-                <motion.button
-                  onClick={handleMultiplexingReset}
-                  className="px-6 py-3 rounded-lg bg-gradient-to-r from-red-500/40 to-red-500/30 
-                             border border-red-400/80 text-red-300 font-semibold text-sm whitespace-nowrap
-                             hover:from-red-500/50 hover:to-red-500/40 hover:border-red-300
-                             transition-all duration-300 flex items-center gap-2 flex-shrink-0"
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                 >
-                  <span>↺</span> Reset
+                  <span>{fragmentation_isDFEnabled ? '🚫' : '✅'}</span> 
+                  {fragmentation_isDFEnabled ? 'DF Flag: ON' : 'DF Flag: OFF'}
                 </motion.button>
-              </div>
 
-              {/* Description */}
-              <p className="text-cyan-200/60 text-sm leading-relaxed font-light mt-6 text-center">
-                Use your mouse to rotate, scroll to zoom, and drag to pan. Click buttons to visualize Multiplexing and Demultiplexing.
-              </p>
-            </div>
-          </motion.div>
-        )}
+                {/* Attempt Transmission Button */}
+                <motion.button
+                  onClick={() => {
+                    setFragmentation_isAttempting(true)
+                    if (fragmentation_isDFEnabled) {
+                      setFragmentationUiMessage('⚠️ Router attempting to transmit 1500-byte datagram through 500-byte MTU tunnel...')
+                      setTimeout(() => {
+                        setFragmentationUiMessage('❌ Datagram rejected! Too large for tunnel. Needs fragmentation.')
+                        setTimeout(() => {
+                          setFragmentation_isAttempting(false)
+                        }, 2000)
+                      }, 800)
+                    } else {
+                      setFragmentationUiMessage('📦 Router fragmenting 1500-byte datagram into 3 fragments...')
+                      setTimeout(() => {
+                        if (fragmentation_isOutOfOrder) {
+                          setFragmentationUiMessage('🔀 Fragments arriving out-of-order: [2, 0, 1]...')
+                        } else {
+                          setFragmentationUiMessage('📤 Fragments traveling in sequence: [0, 1, 2]...')
+                        }
+                      }, 800)
+                    }
+                  }}
+                  className="px-6 py-3 rounded-lg bg-gradient-to-r from-orange-500/40 to-yellow-500/30 
+                             border border-orange-400/60 text-orange-300 font-semibold text-sm whitespace-nowrap
+                             hover:from-orange-500/60 hover:to-yellow-500/50 hover:border-orange-300
+                             transition-all duration-300 flex items-center gap-2 shrink-0"
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  <span>📤</span> Attempt Transmission
+                </motion.button>
 
-        {/* CWND Window Panel - Above Control Panel */}
-        {isCongestionControlConcept && (
-          <motion.div
-            className="absolute left-1/2 transform -translate-x-1/2 z-50"
-            style={{ bottom: `${congestionCtrlPanelHeight + 12}px` }}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.5, duration: 0.5 }}
-          >
-            <div className="bg-gradient-to-br from-slate-900/98 to-slate-950/98 border-4 border-cyan-500/70 rounded-xl p-5 shadow-2xl backdrop-blur-lg w-96">
-              {/* Main Window Visualization */}
-              <div className="relative bg-gradient-to-b from-slate-800 via-slate-800/80 to-slate-900 rounded-lg overflow-hidden border-2 border-slate-700/50 p-3 mb-3 h-20">
-                {/* Background gradient */}
-                <div className="absolute inset-0 bg-gradient-to-r from-cyan-900/10 via-transparent to-blue-900/10 pointer-events-none"></div>
-                
-                {/* Scale grid background */}
-                <div className="absolute inset-0 flex opacity-30">
-                  {[0, 5, 10, 15, 20, 25].map((num) => (
-                    <div
-                      key={`grid-${num}`}
-                      className="flex-1 border-r border-slate-600/40 last:border-r-0"
-                    ></div>
-                  ))}
-                </div>
+                {/* ICMP Error Scenario Button - Phase 4 */}
+                <motion.button
+                  onClick={handleFragmentationICMPError}
+                  className="px-6 py-3 rounded-lg bg-gradient-to-r from-purple-500/40 to-violet-500/30 
+                             border border-purple-400/60 text-purple-300 font-semibold text-sm whitespace-nowrap
+                             hover:from-purple-500/60 hover:to-violet-500/50 hover:border-purple-300
+                             transition-all duration-300 flex items-center gap-2 shrink-0"
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  <span>🔴</span> ICMP Error
+                </motion.button>
 
-                {/* Relative positioning container */}
-                <div className="relative h-full flex items-center">
-                  {/* cwnd Bar - Grows from left to right */}
-                  <motion.div
-                    className="absolute top-1/2 -translate-y-1/2 rounded-r-md"
-                    animate={{
-                      width: `${(congestionCtrlDisplayValues.cwnd / 25) * 100}%`,
-                      opacity: ((congestionCtrlDisplayValues.cwnd / 25) * 100) > 0 ? 1 : 0.3,
-                    }}
-                    transition={{
-                      type: 'spring',
-                      stiffness: 50,
-                      damping: 12,
-                      mass: 0.8,
-                    }}
-                    style={{
-                      left: 0,
-                      height: '75%',
-                      background: `linear-gradient(90deg, ${congestionCtrlDisplayValues.stateColor}, ${congestionCtrlDisplayValues.stateColor}dd)`,
-                      filter: `drop-shadow(0 0 15px ${congestionCtrlDisplayValues.stateColor}99)`,
-                    }}
+                {/* Out-of-Order Mode Toggle - Only visible when fragmentation is allowed (DF=OFF) */}
+                {!fragmentation_isDFEnabled && (
+                  <motion.button
+                    onClick={() => setFragmentation_isOutOfOrder(!fragmentation_isOutOfOrder)}
+                    className={`px-6 py-3 rounded-lg font-semibold text-sm whitespace-nowrap
+                               transition-all duration-300 flex items-center gap-2 shrink-0 ${
+                      fragmentation_isOutOfOrder
+                        ? 'bg-gradient-to-r from-purple-500/40 to-pink-500/30 border border-purple-400/60 text-purple-300 hover:from-purple-500/60 hover:to-pink-500/50'
+                        : 'bg-gradient-to-r from-emerald-500/40 to-green-500/30 border border-emerald-400/60 text-emerald-300 hover:from-emerald-500/60 hover:to-green-500/50'
+                    }`}
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
                   >
-                    {/* Inner shimmer effect */}
-                    <motion.div 
-                      className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent rounded-r-md"
-                      animate={{
-                        x: ['0%', '100%'],
-                      }}
-                      transition={{
-                        duration: 2,
-                        repeat: Infinity,
-                        ease: 'linear',
-                      }}
-                    />
-                    
-                    {/* cwnd Value Label */}
-                    <motion.div 
-                      className="absolute inset-0 flex items-center justify-end pr-4 text-white font-bold text-lg font-mono"
-                      animate={{
-                        scale: congestionCtrlDisplayValues.cwnd > 8 ? 1.1 : 1,
-                        textShadow: `0 0 12px ${congestionCtrlDisplayValues.stateColor}`,
-                      }}
-                      transition={{
-                        type: 'spring',
-                        stiffness: 200,
-                        damping: 15,
-                      }}
-                    >
-                      {Math.round(congestionCtrlDisplayValues.cwnd)}
-                    </motion.div>
-                  </motion.div>
+                    <span>{fragmentation_isOutOfOrder ? '🔀' : '📊'}</span> 
+                    {fragmentation_isOutOfOrder ? 'Mode: Out-of-Order' : 'Mode: In-Order'}
+                  </motion.button>
+                )}
 
-                  {/* Threshold Line - Yellow */}
-                  <motion.div
-                    className="absolute top-0 bottom-0 rounded-full"
-                    animate={{
-                      left: `calc(${(congestionCtrlDisplayValues.ssthresh / 25) * 100}% - 3px)`,
-                      opacity: 1,
-                    }}
-                    transition={{
-                      type: 'spring',
-                      stiffness: 100,
-                      damping: 20,
-                    }}
-                    style={{
-                      width: '6px',
-                      background: 'linear-gradient(to bottom, rgba(253, 224, 71, 0.3), rgba(253, 224, 71, 0.9))',
-                      boxShadow: '0 0 20px rgba(253, 224, 71, 0.9), inset 0 0 10px rgba(253, 224, 71, 0.6)',
-                      borderLeft: '2px solid rgba(253, 224, 71, 1)',
-                      borderRight: '2px solid rgba(253, 224, 71, 1)',
-                    }}
-                  />
-
-                  {/* Max Line - Red */}
-                  <motion.div
-                    className="absolute top-0 bottom-0 rounded-full"
-                    animate={{
-                      left: `calc(${(congestionCtrlDisplayValues.maxCwnd / 25) * 100}% - 3px)`,
-                      opacity: 1,
-                    }}
-                    transition={{
-                      type: 'spring',
-                      stiffness: 100,
-                      damping: 20,
-                    }}
-                    style={{
-                      width: '6px',
-                      background: 'linear-gradient(to bottom, rgba(239, 68, 68, 0.3), rgba(239, 68, 68, 0.9))',
-                      boxShadow: '0 0 20px rgba(239, 68, 68, 0.9), inset 0 0 10px rgba(239, 68, 68, 0.6)',
-                      borderLeft: '2px solid rgba(239, 68, 68, 1)',
-                      borderRight: '2px solid rgba(239, 68, 68, 1)',
-                    }}
-                  />
-                </div>
-
-                {/* Scale Numbers at Bottom */}
-                <div className="absolute bottom-2 left-0 right-0 flex text-xs font-mono text-slate-400/80 px-2">
-                  {[0, 5, 10, 15, 20, 25].map((num) => (
-                    <motion.div 
-                      key={`label-${num}`} 
-                      className="flex-1 text-center"
-                      animate={{
-                        opacity: num <= congestionCtrlDisplayValues.cwnd ? 1 : 0.6,
-                        scale: num <= congestionCtrlDisplayValues.cwnd ? 1.1 : 1,
-                      }}
-                      transition={{ duration: 0.3 }}
-                    >
-                      {num}
-                    </motion.div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Legend and Values */}
-              <div className="grid grid-cols-3 gap-3 mb-2">
-                {/* cwnd Value */}
-                <motion.div 
-                  className="rounded-lg p-1 text-center"
-                  animate={{
-                    borderColor: `${congestionCtrlDisplayValues.stateColor}aa`,
-                    boxShadow: `0 0 15px ${congestionCtrlDisplayValues.stateColor}40, inset 0 0 10px ${congestionCtrlDisplayValues.stateColor}15`,
-                    backgroundColor: `${congestionCtrlDisplayValues.stateColor}15`,
-                  }}
-                  transition={{
-                    type: 'spring',
-                    stiffness: 100,
-                    damping: 15,
-                  }}
-                  style={{
-                    border: `2px solid ${congestionCtrlDisplayValues.stateColor}40`,
-                  }}
-                >
-                  <div className="flex items-center justify-center gap-1">
-                    <motion.div 
-                      className="text-sm font-bold text-cyan-300 font-mono"
-                      animate={{
-                        scale: [1, 1.15, 1],
-                      }}
-                      transition={{
-                        type: 'spring',
-                        stiffness: 200,
-                        damping: 10,
-                      }}
-                    >
-                      {Math.round(congestionCtrlDisplayValues.cwnd)}
-                    </motion.div>
-                    <div className="text-xs text-cyan-400 font-semibold">CWND</div>
-                  </div>
-                </motion.div>
-
-                {/* Threshold Value */}
-                <motion.div 
-                  className="bg-gradient-to-br from-yellow-500/20 to-yellow-500/10 rounded-lg p-1 border-2 border-yellow-400/60 text-center"
-                  animate={{
-                    boxShadow: congestionCtrlDisplayValues.cwnd >= congestionCtrlDisplayValues.ssthresh ? '0 0 20px rgba(250, 204, 21, 0.6)' : '0 0 10px rgba(250, 204, 21, 0.3)',
-                  }}
-                  transition={{ duration: 0.3 }}
-                >
-                  <div className="flex items-center justify-center gap-1">
-                    <div className="text-sm font-bold text-yellow-400 font-mono">{congestionCtrlDisplayValues.ssthresh}</div>
-                    <div className="text-xs text-yellow-400 font-semibold">THRESHOLD</div>
-                  </div>
-                </motion.div>
-
-                {/* Max Value */}
-                <motion.div 
-                  className="bg-gradient-to-br from-red-500/20 to-red-500/10 rounded-lg p-1 border-2 border-red-400/60 text-center"
-                  animate={{
-                    boxShadow: congestionCtrlDisplayValues.cwnd >= congestionCtrlDisplayValues.maxCwnd ? '0 0 25px rgba(239, 68, 68, 0.8), 0 0 40px rgba(239, 68, 68, 0.5)' : '0 0 10px rgba(239, 68, 68, 0.3)',
-                  }}
-                  transition={{ duration: 0.3 }}
-                >
-                  <div className="flex items-center justify-center gap-1">
-                    <div className="text-sm font-bold text-red-400 font-mono">{congestionCtrlDisplayValues.maxCwnd}</div>
-                    <div className="text-xs text-red-400 font-semibold">MAX LIMIT</div>
-                  </div>
-                </motion.div>
-              </div>
-            </div>
-          </motion.div>
-        )}
-
-        {/* Control Panel - For Congestion Control Concept */}
-        {isCongestionControlConcept && (
-          <motion.div
-            ref={congestionCtrlPanelRef}
-            className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-slate-900 to-slate-900/80 border-t border-cyan-500/20 p-8 pointer-events-none"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.4, duration: 0.5 }}
-          >
-            <div className="max-w-5xl mx-auto">
-              {/* Status Message */}
-              <div className="mb-6 p-4 rounded-lg bg-slate-900/50 border border-cyan-500/30">
-                <motion.p 
-                  className="text-cyan-300 font-semibold text-center text-base"
-                  key={congestionCtrlUiMessage}
-                  initial={{ opacity: 0, y: -5 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.3 }}
-                >
-                  {congestionCtrlUiMessage || 'Ready'}
-                </motion.p>
-              </div>
-
-              {/* Control Buttons */}
-              <div className="flex flex-nowrap gap-3 justify-center items-center pointer-events-auto overflow-x-auto px-4 md:px-8">
+                {/* Reset Button */}
                 <motion.button
-                  onClick={handleCongestionCtrlStart}
-                  disabled={congestionCtrlIsRunning}
-                  className={`px-6 py-3 rounded-lg font-semibold text-sm whitespace-nowrap
-                             transition-all duration-300 flex items-center gap-2 flex-shrink-0 ${
-                    congestionCtrlIsRunning
-                      ? 'bg-gradient-to-r from-green-500/20 to-emerald-500/10 border border-green-400/30 text-green-300 cursor-not-allowed opacity-60'
-                      : 'bg-gradient-to-r from-green-500/40 to-emerald-500/30 border border-green-400/80 text-green-200 hover:from-green-500/50 hover:to-emerald-500/40 shadow-lg shadow-green-500/20'
-                  }`}
-                  whileHover={congestionCtrlIsRunning ? {} : { scale: 1.05 }}
-                  whileTap={congestionCtrlIsRunning ? {} : { scale: 0.95 }}
-                >
-                  <span>▶️</span> Start Cycle
-                </motion.button>
-
-                {/* Divider */}
-                <div className="h-8 w-px bg-gradient-to-b from-transparent via-cyan-500/30 to-transparent mx-2"></div>
-
-                <motion.button
-                  onClick={handleNetworkCongestion}
-                  disabled={!congestionCtrlIsRunning}
-                  className={`px-6 py-3 rounded-lg font-semibold text-sm whitespace-nowrap
-                             transition-all duration-300 flex items-center gap-2 flex-shrink-0 ${
-                    !congestionCtrlIsRunning
-                      ? 'bg-gradient-to-r from-orange-500/20 to-red-500/10 border border-orange-400/30 text-orange-300 cursor-not-allowed opacity-60'
-                      : 'bg-gradient-to-r from-orange-500/40 to-red-500/30 border border-orange-400/80 text-orange-200 hover:from-orange-500/50 hover:to-red-500/40 shadow-lg shadow-orange-500/20'
-                  }`}
-                  whileHover={!congestionCtrlIsRunning ? {} : { scale: 1.05 }}
-                  whileTap={!congestionCtrlIsRunning ? {} : { scale: 0.95 }}
-                >
-                  <span>🔴</span> Congest Network
-                </motion.button>
-
-                {/* Divider */}
-                <div className="h-8 w-px bg-gradient-to-b from-transparent via-cyan-500/30 to-transparent mx-2"></div>
-
-                <motion.button
-                  onClick={handleCongestionCtrlReset}
-                  className="px-6 py-3 rounded-lg bg-gradient-to-r from-red-500/40 to-red-500/30 
-                             border border-red-400/80 text-red-300 font-semibold text-sm whitespace-nowrap
-                             hover:from-red-500/50 hover:to-red-500/40 hover:border-red-300
-                             transition-all duration-300 flex items-center gap-2 flex-shrink-0"
+                  onClick={handleFragmentationReset}
+                  className="px-6 py-3 rounded-lg bg-gradient-to-r from-red-500/50 to-red-600/40 
+                             border border-red-400/60 text-red-300 font-semibold text-sm whitespace-nowrap
+                             hover:from-red-500/70 hover:to-red-600/60 hover:border-red-300
+                             transition-all duration-300 flex items-center gap-2 shrink-0
+                             shadow-lg shadow-red-500/20 hover:shadow-red-500/40"
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                 >
@@ -1252,16 +1039,27 @@ export default function Scene3D({ selectedConceptId, selectedLayerId, onBack }) 
                 </motion.button>
               </div>
 
-              {/* Description */}
+              {/* Info Messages */}
+              <div className="flex flex-wrap gap-2 justify-center mt-4 px-4">
+                <div className="text-cyan-300/70 text-xs font-light px-3 py-2 bg-slate-800/50 rounded border border-cyan-500/20">
+                  {fragmentation_isDFEnabled ? 'DF=ON: Packet rejected if too large' : 'DF=OFF: Packet will be fragmented'}
+                </div>
+                {!fragmentation_isDFEnabled && (
+                  <div className="text-cyan-300/70 text-xs font-light px-3 py-2 bg-slate-800/50 rounded border border-cyan-500/20">
+                    {fragmentation_isOutOfOrder ? 'Phase 3: Out-of-order fragments reassembled by offset' : 'Phase 2: Sequential fragment delivery'}
+                  </div>
+                )}
+              </div>
+
               <p className="text-cyan-200/60 text-sm leading-relaxed font-light mt-6 text-center">
-                Use your mouse to rotate, scroll to zoom, and drag to pen. Click button to visualise sliding window, flow control process.
+                Click "Attempt Transmission" to see what happens when a large packet reaches a narrower link. Toggle DF Flag to enable/disable fragmentation.
               </p>
             </div>
           </motion.div>
         )}
 
-        {/* Info Panel - For Non-TCP/Non-Segmentation/Non-ACK/Non-FlowControl/Non-TcpVsUdp/Non-Multiplexing/Non-CongestionControl Concepts */}
-        {!isTCPConcept && !isSegmentationConcept && !isACKConcept && !isFlowControlConcept && !isTcpVsUdpConcept && !isMultiplexingConcept && !isCongestionControlConcept && (
+        {/* Info Panel - For Non-Interactive Concepts */}
+        {!isTCPConcept && !isSegmentationConcept && !isACKConcept && !isFlowControlConcept && !isTcpVsUdpConcept && !isFragmentationConcept && (
           <motion.div
             className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-slate-950 via-slate-950/80 to-transparent p-8 z-10 pointer-events-none"
             initial={{ opacity: 0, y: 20 }}
