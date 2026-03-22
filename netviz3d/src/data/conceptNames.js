@@ -111,13 +111,9 @@ export const conceptMapping = {
   'net-ip-addr': {
     name: 'IP Addressing',
     fullName: 'Internet Protocol Addressing',
-  // Network Layer (11 concepts)
-  'net-ipv4-header': {
-    name: 'IPv4 Header',
-    fullName: 'IPv4 Header Structure',
-    color: '#0ea5e9',
+    color: '#06b6d4',
     layer: 'Network',
-    icon: '📋'
+    icon: '🏷️'
   },
   'net-fragmentation': {
     name: 'Fragmentation',

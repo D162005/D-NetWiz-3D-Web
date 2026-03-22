@@ -92,6 +92,8 @@ export const OSI_LAYERS = [
         meaning: 'RTT impact from transmission, propagation, queuing, and processing delay',
         example: 'High traffic load increases queue delay and raises RTT for ACK loop',
         visualGoal: 'Visualize all delay components with a live RTT counter and stacked-delay view',
+      },
+      {
         id: 'trans-congestion-ctrl',
         name: 'Congestion Control',
         meaning: 'Managing transmission rate to prevent network congestion and packet loss',
@@ -134,9 +136,6 @@ export const OSI_LAYERS = [
         meaning: 'Unique identity assigned to each device on a network',
         example: 'Laptop with IP 192.168.1.10',
         visualGoal: 'Display IP labels on network nodes',
-        meaning: 'Structure containing source IP, destination IP, TTL, and other protocol information',
-        example: 'IPv4 header: Version (4 bits), IHL (4 bits), TOS (8 bits), Total Length (16 bits), etc.',
-        visualGoal: 'Display IPv4 header structure and field breakdown',
       },
       {
         id: 'net-fragmentation',

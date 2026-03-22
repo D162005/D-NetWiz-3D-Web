@@ -332,26 +332,28 @@ function PacketDropViz() {
   )
 }
 
-export default function NetworkLayerViz({ conceptId = 'net-ip-addr', ipFragIsAttempting = false, ipFragDFEnabled = false, ipFragOutOfOrder = false, ipFragShowICMPError = false }) {
+export default function NetworkLayerViz({ conceptId = 'net-ip-addr', ipFragIsAttempting = false, ipFragDFEnabled = false, ipFragOutOfOrder = false, ipFragShowICMPError = false, isFragmentationAttempting = false, isDFEnabled = false, isFragmentationOutOfOrder = false, showICMPError = false }) {
+  const fragAttempting = ipFragIsAttempting || isFragmentationAttempting
+  const fragDFEnabled = ipFragDFEnabled || isDFEnabled
+  const fragOutOfOrder = ipFragOutOfOrder || isFragmentationOutOfOrder
+  const fragShowICMPError = ipFragShowICMPError || showICMPError
+
   switch (conceptId) {
     case 'net-ipv4-header':
       return <IPv4HeaderStage />
     case 'net-ip-fragmentation':
       return (
         <IPFragmentationStage
-          isAttempting={ipFragIsAttempting}
-          isDFEnabled={ipFragDFEnabled}
-          isOutOfOrder={ipFragOutOfOrder}
-          showICMPError={ipFragShowICMPError}
+          isAttempting={fragAttempting}
+          isDFEnabled={fragDFEnabled}
+          isOutOfOrder={fragOutOfOrder}
+          showICMPError={fragShowICMPError}
         />
       )
     case 'net-ip-addr':
-export default function NetworkLayerViz({ conceptId = 'net-ipv4-header', isFragmentationAttempting = false, isDFEnabled = false, isFragmentationOutOfOrder = false, showICMPError = false }) {
-  switch (conceptId) {
-    case 'net-ipv4-header':
       return <IPAddressingViz />
     case 'net-fragmentation':
-      return <IPFragmentationStage isAttempting={isFragmentationAttempting} isDFEnabled={isDFEnabled} isOutOfOrder={isFragmentationOutOfOrder} showICMPError={showICMPError} />
+      return <IPFragmentationStage isAttempting={fragAttempting} isDFEnabled={fragDFEnabled} isOutOfOrder={fragOutOfOrder} showICMPError={fragShowICMPError} />
     case 'net-ttl':
       return <TTLViz />
     case 'net-network-host-id':

@@ -63,7 +63,6 @@ export default function Scene3D({ selectedConceptId, selectedLayerId, onBack }) 
   const ipFragStartTimerRef = useRef(null)
   const isFragmentationConcept = selectedConceptId === 'net-fragmentation'
   const isCongestionControlConcept = selectedConceptId === 'trans-congestion-ctrl'
-  const orbitControlsRef = useRef(null)
   const congestionCtrlPanelRef = useRef(null)
 
   const handleTriggerScenario = (scenario) => {
@@ -1085,8 +1084,82 @@ export default function Scene3D({ selectedConceptId, selectedLayerId, onBack }) 
           </motion.div>
         )}
 
-        {/* Info Panel - For Non-TCP/Non-Segmentation/Non-ACK/Non-FlowControl/Non-TcpVsUdp Concepts */}
-        {!isTCPConcept && !isSegmentationConcept && !isACKConcept && !isFlowControlConcept && !isTcpVsUdpConcept && !isIPFragmentationConcept && (
+        {/* Control Panel - For Congestion Control Concept */}
+        {isCongestionControlConcept && (
+          <motion.div
+            ref={congestionCtrlPanelRef}
+            className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-slate-950 via-slate-950/90 to-transparent p-8 z-10 pointer-events-none"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4, duration: 0.5 }}
+          >
+            <div className="max-w-5xl mx-auto">
+              {/* Status Message */}
+              <div className="mb-6 p-4 rounded-lg bg-slate-900/50 border border-cyan-500/30">
+                <p className="text-cyan-300 font-semibold text-center">
+                  {congestionCtrlUiMessage || 'Ready to start congestion control simulation'}
+                </p>
+              </div>
+
+              {/* Control Buttons */}
+              <div className="flex flex-wrap gap-3 justify-center items-center pointer-events-auto px-4">
+                {/* START Button */}
+                <motion.button
+                  onClick={handleCongestionCtrlStart}
+                  disabled={congestionCtrlIsRunning}
+                  className={`px-10 py-4 rounded-lg font-bold text-base whitespace-nowrap
+                             transition-all duration-300 flex items-center gap-3 flex-shrink-0 ${
+                    congestionCtrlIsRunning
+                      ? 'bg-gradient-to-r from-green-500/20 to-emerald-500/10 border border-green-400/30 text-green-300 cursor-not-allowed opacity-60'
+                      : 'bg-gradient-to-r from-green-500/40 to-emerald-500/30 border border-green-400/80 text-green-200 hover:from-green-500/50 hover:to-emerald-500/40 shadow-lg shadow-green-500/20'
+                  }`}
+                  whileHover={congestionCtrlIsRunning ? {} : { scale: 1.05 }}
+                  whileTap={congestionCtrlIsRunning ? {} : { scale: 0.95 }}
+                >
+                  <span>▶️</span> START
+                </motion.button>
+
+                {/* Congest Network Button */}
+                <motion.button
+                  onClick={handleNetworkCongestion}
+                  disabled={!congestionCtrlIsRunning}
+                  className={`px-8 py-4 rounded-lg font-bold text-base whitespace-nowrap
+                             transition-all duration-300 flex items-center gap-3 flex-shrink-0 ${
+                    congestionCtrlIsRunning
+                      ? 'bg-gradient-to-r from-red-500/40 to-rose-500/30 border border-red-400/80 text-red-200 hover:from-red-500/50 hover:to-rose-500/40 shadow-lg shadow-red-500/20'
+                      : 'bg-gradient-to-r from-red-500/20 to-rose-500/10 border border-red-400/30 text-red-300 cursor-not-allowed opacity-60'
+                  }`}
+                  whileHover={congestionCtrlIsRunning ? { scale: 1.05 } : {}}
+                  whileTap={congestionCtrlIsRunning ? { scale: 0.95 } : {}}
+                >
+                  <span>🔴</span> Congest Network
+                </motion.button>
+
+                {/* RESET Button */}
+                <motion.button
+                  onClick={handleCongestionCtrlReset}
+                  className="px-6 py-4 rounded-lg bg-gradient-to-r from-red-500/50 to-red-600/40 
+                             border border-red-400/60 text-red-300 font-semibold text-base whitespace-nowrap
+                             hover:from-red-500/70 hover:to-red-600/60 hover:border-red-300
+                             transition-all duration-300 flex items-center gap-2 shrink-0
+                             shadow-lg shadow-red-500/20 hover:shadow-red-500/40"
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  <span>↺</span> Reset
+                </motion.button>
+              </div>
+
+              {/* Info Text */}
+              <div className="mt-6 text-center text-cyan-200/70 text-sm max-w-2xl mx-auto">
+                <p>
+                  Use your mouse to rotate, scroll to zoom, and drag to pan. Click START to begin the simulation, then use CONGEST NETWORK to trigger packet loss and observe the congestion control algorithm in action.
+                </p>
+              </div>
+            </div>
+          </motion.div>
+        )}
+
         {/* Control Panel - For Fragmentation Concept */}
         {isFragmentationConcept && (
           <motion.div
