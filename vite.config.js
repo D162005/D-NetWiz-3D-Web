@@ -8,4 +8,10 @@ export default defineConfig({
     react(),
     tailwindcss(),
   ],
+  define: {
+    // Ensure VITE_API_BASE is properly set in the build
+    'process.env.VITE_API_BASE': JSON.stringify(
+      process.env.VITE_API_BASE || 'https://netviz3d-backend.onrender.com'
+    ),
+  },
 })
