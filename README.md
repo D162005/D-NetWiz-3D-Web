@@ -1,5 +1,7 @@
 # 🌐 NetViz3D - Interactive 3D OSI Model Visualizer
 
+<div align="center">
+
 [![Node.js](https://img.shields.io/badge/Node.js-24.14.1-green)](https://nodejs.org)
 [![React](https://img.shields.io/badge/React-19.2.0-blue)](https://react.dev)
 [![Vite](https://img.shields.io/badge/Vite-7.3.1-purple)](https://vitejs.dev)
@@ -7,6 +9,8 @@
 [![Status](https://img.shields.io/badge/Status-Production%20Ready-brightgreen)](https://github.com)
 
 > **A powerful, interactive 3D visualization platform for learning the OSI Model with AI-assisted network topology building and real-time protocol simulation.**
+
+</div>
 
 ---
 
