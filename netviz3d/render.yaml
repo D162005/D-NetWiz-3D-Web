@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: netviz3d-backend
+    name: d-netviz3d-backend
     env: node
     plan: free
     rootDir: .
