@@ -3,13 +3,11 @@ services:
     name: d-netviz3d-backend
     env: node
     plan: free
-    rootDir: .
+    rootDir: netviz3d
     buildCommand: npm install
     startCommand: npm start
     envVars:
       - key: NODE_ENV
         value: production
-      - key: PORT
-        value: 3001
       - key: CONVAI_API_KEY
         sync: false
