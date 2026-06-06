@@ -1,26 +1,29 @@
 # Ignore tmpclaude-cwd files and folders
 tmpclaude-*-cwd/
 tmpclaude-*-cwd
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# Dependencies
+node_modules
+pnpm-lock.yaml
+yarn.lock
+
+# Build output
+dist
+dist-ssr
+*.local
+
 # Logs
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
-
-# Ignore all Markdown and log files
-*.md
 *.log
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-pnpm-debug.log*
-lerna-debug.log*
-
-node_modules
-dist
-dist-ssr
-*.local
 
 # Editor directories and files
 .vscode/*
@@ -32,3 +35,13 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Build temp
+build-test.log
+final-build.log
+test_fc.js
+Scene3D_original.jsx
+
+*.md
+!README.md 
+

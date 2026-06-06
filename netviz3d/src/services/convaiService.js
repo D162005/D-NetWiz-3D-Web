@@ -3,7 +3,9 @@
  * Communicates with backend proxy to avoid CORS and expose API key
  */
 
-const API_BASE = 'http://localhost:3001/api/convai'
+const API_BASE = import.meta.env.VITE_API_BASE 
+  ? `${import.meta.env.VITE_API_BASE}/api/convai`
+  : 'http://localhost:3001/api/convai'
 
 let sessionId = null
 

@@ -10,11 +10,11 @@ import express from 'express'
 import cors from 'cors'
 
 const app = express()
-const PORT = 3001
+const PORT = process.env.PORT || 3001
 
 const CONVAI_API_BASE = 'https://api.convai.com'
 const CHARACTER_ID = '227fad3a-2743-11f1-8306-42010a7be02c'
-const API_KEY = '00bbb6212a694f3132dea85bff6ab8c1'
+const API_KEY = process.env.CONVAI_API_KEY || '00bbb6212a694f3132dea85bff6ab8c1'
 const CONVAI_TIMEOUT_MS = 20000
 
 // Middleware
