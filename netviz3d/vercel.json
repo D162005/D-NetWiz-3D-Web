@@ -1,8 +1,5 @@
 {
   "buildCommand": "npm run build",
   "outputDirectory": "dist",
-  "framework": "vite",
-  "env": {
-    "VITE_API_BASE": "@netviz3d_backend_url"
-  }
+  "framework": "vite"
 }
