@@ -3,6 +3,7 @@ services:
     name: netviz3d-backend
     env: node
     plan: free
+    rootDir: .
     buildCommand: npm install
     startCommand: npm start
     envVars:
